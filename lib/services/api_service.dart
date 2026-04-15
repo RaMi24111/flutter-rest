@@ -1,0 +1,103 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:restaurant_admin/core/constants.dart';
+
+/// Central HTTP client — all API calls go through this.
+/// Mirrors the Next.js api.service.ts + proxy.ts behaviour.
+class ApiService {
+  static Future<Map<String, String>> _buildHeaders(
+      {bool requiresAuth = true}) async {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
+    };
+    if (requiresAuth) {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(kTokenKey);
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    return headers;
+  }
+
+  static Uri _uri(String path) => Uri.parse('$kBackendBase$path');
+
+  /// GET request
+  static Future<dynamic> get(String path, {bool requiresAuth = true}) async {
+    final headers = await _buildHeaders(requiresAuth: requiresAuth);
+    final response = await http.get(_uri(path), headers: headers).timeout(
+          const Duration(seconds: 60),
+        );
+    return _handleResponse(response);
+  }
+
+  /// POST request
+  static Future<dynamic> post(String path, Map<String, dynamic> body,
+      {bool requiresAuth = false}) async {
+    final headers = await _buildHeaders(requiresAuth: requiresAuth);
+    final response = await http
+        .post(_uri(path), headers: headers, body: jsonEncode(body))
+        .timeout(const Duration(seconds: 60));
+    return _handleResponse(response);
+  }
+
+  /// PUT request
+  static Future<dynamic> put(String path, Map<String, dynamic> body,
+      {bool requiresAuth = true}) async {
+    final headers = await _buildHeaders(requiresAuth: requiresAuth);
+    final response = await http
+        .put(_uri(path), headers: headers, body: jsonEncode(body))
+        .timeout(const Duration(seconds: 60));
+    return _handleResponse(response);
+  }
+
+  /// PATCH request
+  static Future<dynamic> patch(String path,
+      {Map<String, dynamic>? body, bool requiresAuth = true}) async {
+    final headers = await _buildHeaders(requiresAuth: requiresAuth);
+    final response = await http
+        .patch(_uri(path),
+            headers: headers, body: body != null ? jsonEncode(body) : null)
+        .timeout(const Duration(seconds: 60));
+    return _handleResponse(response);
+  }
+
+  /// DELETE request
+  static Future<dynamic> delete(String path, {bool requiresAuth = true}) async {
+    final headers = await _buildHeaders(requiresAuth: requiresAuth);
+    final response = await http
+        .delete(_uri(path), headers: headers)
+        .timeout(const Duration(seconds: 60));
+    return _handleResponse(response);
+  }
+
+  static dynamic _handleResponse(http.Response response) {
+    final body = response.body;
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (body.isEmpty) return {};
+      final decoded = jsonDecode(body);
+      // Unwrap the { success, message, data } envelope used by the deployed backend.
+      // If the response IS the envelope (has a 'data' key), return data.
+      // Otherwise fall back to returning the raw decoded value (list or map).
+      if (decoded is Map<String, dynamic> && decoded.containsKey('data')) {
+        return decoded['data'];
+      }
+      return decoded;
+    } else {
+      String message = 'Request failed (${response.statusCode})';
+      try {
+        final json = jsonDecode(body);
+        message = json['message'] ?? json['error'] ?? message;
+      } catch (_) {}
+      if (response.statusCode == 401) {
+        throw Exception('Invalid email or password. Please try again.');
+      }
+      if (response.statusCode == 403) {
+        throw Exception('Access denied. Your account may not have admin privileges.');
+      }
+      throw Exception(message);
+    }
+  }
+}

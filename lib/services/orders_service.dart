@@ -1,0 +1,18 @@
+import 'package:restaurant_admin/services/api_service.dart';
+import 'package:restaurant_admin/core/constants.dart';
+import 'package:restaurant_admin/core/models/restaurant_model.dart';
+
+class OrdersService {
+  static Future<List<OrderModel>> getOrders() async {
+    final data =
+        await ApiService.get(ApiEndpoints.ordersList, requiresAuth: true);
+    final list = data as List<dynamic>;
+    return list.map((e) => OrderModel.fromJson(e)).toList();
+  }
+
+  static Future<OrderModel> getOrderById(String orderId) async {
+    final data = await ApiService.get(ApiEndpoints.orderById(orderId),
+        requiresAuth: true);
+    return OrderModel.fromJson(data as Map<String, dynamic>);
+  }
+}
