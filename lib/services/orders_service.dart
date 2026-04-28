@@ -15,4 +15,9 @@ class OrdersService {
         requiresAuth: true);
     return OrderModel.fromJson(data as Map<String, dynamic>);
   }
+
+  static Future<Map<String, dynamic>> createOrder(Map<String, dynamic> payload) async {
+    final data = await ApiService.post(ApiEndpoints.ordersList, payload, requiresAuth: true);
+    return data as Map<String, dynamic>;
+  }
 }

@@ -15,16 +15,19 @@ class AuthService {
       requiresAuth: false,
     );
 
-    // response is already the unwrapped `data` object: { token, user }
     final data = response as Map<String, dynamic>;
 
-    // token may be at top-level (new backend) or nested under 'data' (fallback)
-    final token = (data['token'] ??
-            (data['data'] is Map ? (data['data'] as Map)['token'] : null))
-        as String?;
+    // The backend now sends { success: true, token: "...", user: { ... } } directly
+    // Flutter previously expected this inside a "data" object.
+    String? token;
+    if (data.containsKey('token')) {
+      token = data['token']?.toString();
+    } else if (data.containsKey('data') && data['data'] is Map) {
+      token = (data['data'] as Map)['token']?.toString();
+    }
 
     if (token == null || token.isEmpty) {
-      throw Exception('No token received from server');
+      throw Exception('No token received from server. Response was: $data');
     }
 
     // Persist token for subsequent requests
@@ -32,10 +35,15 @@ class AuthService {
     await prefs.setString(kTokenKey, token);
 
     // Build user object
-    final user = (data['user'] ??
-            (data['data'] is Map ? (data['data'] as Map)['user'] : null))
-        as Map<String, dynamic>? ??
-        {'email': email};
+    Map<String, dynamic> user = {'email': email};
+    try {
+      if (data.containsKey('user') && data['user'] is Map) {
+        user = Map<String, dynamic>.from(data['user'] as Map);
+      } else if (data.containsKey('data') && data['data'] is Map && (data['data'] as Map).containsKey('user')) {
+        user = Map<String, dynamic>.from((data['data'] as Map)['user'] as Map);
+      }
+    } catch (_) {}
+    
     await prefs.setString(kUserKey, email);
 
     return {'token': token, 'user': user};

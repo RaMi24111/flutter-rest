@@ -69,6 +69,7 @@ class MenuItem {
   final bool isAvailable;
   final String? imageUrl;
   final String categoryId;
+  final String? preparationTime;
 
   MenuItem({
     required this.id,
@@ -78,6 +79,7 @@ class MenuItem {
     required this.isAvailable,
     this.imageUrl,
     required this.categoryId,
+    this.preparationTime,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
@@ -89,6 +91,7 @@ class MenuItem {
       isAvailable: json['is_available'] == true || json['is_available'] == 1,
       imageUrl: json['image_url']?.toString(),
       categoryId: json['category_id']?.toString() ?? '',
+      preparationTime: json['preparation_time']?.toString(),
     );
   }
 }

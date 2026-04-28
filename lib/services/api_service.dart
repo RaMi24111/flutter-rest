@@ -28,7 +28,7 @@ class ApiService {
   static Future<dynamic> get(String path, {bool requiresAuth = true}) async {
     final headers = await _buildHeaders(requiresAuth: requiresAuth);
     final response = await http.get(_uri(path), headers: headers).timeout(
-          const Duration(seconds: 60),
+          const Duration(seconds: 40),
         );
     return _handleResponse(response);
   }
@@ -39,7 +39,7 @@ class ApiService {
     final headers = await _buildHeaders(requiresAuth: requiresAuth);
     final response = await http
         .post(_uri(path), headers: headers, body: jsonEncode(body))
-        .timeout(const Duration(seconds: 60));
+        .timeout(const Duration(seconds: 40));
     return _handleResponse(response);
   }
 
@@ -49,7 +49,7 @@ class ApiService {
     final headers = await _buildHeaders(requiresAuth: requiresAuth);
     final response = await http
         .put(_uri(path), headers: headers, body: jsonEncode(body))
-        .timeout(const Duration(seconds: 60));
+        .timeout(const Duration(seconds: 40));
     return _handleResponse(response);
   }
 
@@ -60,7 +60,7 @@ class ApiService {
     final response = await http
         .patch(_uri(path),
             headers: headers, body: body != null ? jsonEncode(body) : null)
-        .timeout(const Duration(seconds: 60));
+        .timeout(const Duration(seconds: 40));
     return _handleResponse(response);
   }
 
@@ -69,7 +69,7 @@ class ApiService {
     final headers = await _buildHeaders(requiresAuth: requiresAuth);
     final response = await http
         .delete(_uri(path), headers: headers)
-        .timeout(const Duration(seconds: 60));
+        .timeout(const Duration(seconds: 40));
     return _handleResponse(response);
   }
 
@@ -81,8 +81,13 @@ class ApiService {
       // Unwrap the { success, message, data } envelope used by the deployed backend.
       // If the response IS the envelope (has a 'data' key), return data.
       // Otherwise fall back to returning the raw decoded value (list or map).
-      if (decoded is Map<String, dynamic> && decoded.containsKey('data')) {
-        return decoded['data'];
+      if (decoded is Map<String, dynamic>) {
+        if (decoded.containsKey('success') && decoded['success'] == false) {
+          throw Exception(decoded['message'] ?? decoded['error'] ?? 'Request failed');
+        }
+        if (decoded.containsKey('data')) {
+          return decoded['data'];
+        }
       }
       return decoded;
     } else {
