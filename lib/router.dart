@@ -6,6 +6,7 @@ import 'package:restaurant_admin/screens/landing/admin_landing_screen.dart';
 import 'package:restaurant_admin/screens/login/admin_login_screen.dart';
 import 'package:restaurant_admin/screens/dashboard/admin_dashboard_screen.dart';
 import 'package:restaurant_admin/screens/dashboard/menu/menu_screen.dart';
+import 'package:restaurant_admin/screens/dashboard/staff/staff_landing_screen.dart';
 import 'package:restaurant_admin/screens/dashboard/staff/staff_screen.dart';
 import 'package:restaurant_admin/screens/dashboard/tables/tables_screen.dart';
 import 'package:restaurant_admin/screens/dashboard/orders/orders_screen.dart';
@@ -45,9 +46,18 @@ GoRouter createRouter(AuthProvider authProvider) {
         path: '/admin/dashboard/menu',
         builder: (context, state) => const MenuScreen(),
       ),
+      // Staff landing — choose between Serving Staff and Billing Staff
       GoRoute(
         path: '/admin/dashboard/staff',
-        builder: (context, state) => const StaffScreen(),
+        builder: (context, state) => const StaffLandingScreen(),
+      ),
+      // Staff detail screen — role is 'server' or 'cashier'
+      GoRoute(
+        path: '/admin/dashboard/staff/:role',
+        builder: (context, state) {
+          final role = state.pathParameters['role'] ?? 'server';
+          return StaffScreen(role: role);
+        },
       ),
       GoRoute(
         path: '/admin/dashboard/tables',

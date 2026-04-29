@@ -117,5 +117,12 @@ class AppShadows {
       offset: const Offset(0, 8),
     ),
   ];
+
+  static const List<Shadow> iconOutline = [
+    Shadow(color: AppColors.rubyDark, offset: Offset(-1, -1)),
+    Shadow(color: AppColors.rubyDark, offset: Offset(1, -1)),
+    Shadow(color: AppColors.rubyDark, offset: Offset(1, 1)),
+    Shadow(color: AppColors.rubyDark, offset: Offset(-1, 1)),
+  ];
 }
 

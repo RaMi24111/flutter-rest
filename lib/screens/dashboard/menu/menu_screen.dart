@@ -209,7 +209,7 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget _buildCustomHeader() {
     return Container(
       color: AppColors.rubyDark,
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
       child: SafeArea(
         bottom: false,
         child: Row(
@@ -230,7 +230,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   Text('Menu Management', style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Text('Manage your restaurant menu items and categories', style: GoogleFonts.inter(color: Colors.white70, fontSize: 14)),
@@ -245,7 +245,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   label: Text('Create Order', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.gold, width: 2),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
@@ -256,7 +256,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   label: Text('Add Menu Item', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: AppColors.rubyDark)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.gold,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
@@ -272,9 +272,11 @@ class _MenuScreenState extends State<MenuScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
+        border: Border.all(color: AppColors.rubyDark.withValues(alpha: 0.3), width: 1),
         borderRadius: BorderRadius.circular(12),
         boxShadow: AppShadows.card,
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -293,11 +295,11 @@ class _MenuScreenState extends State<MenuScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     minimumSize: Size.zero,
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.add, size: 16, color: Colors.white),
-                      SizedBox(width: 4),
-                      Text('Add\nCategory', textAlign: TextAlign.center, style: TextStyle(fontSize: 10)),
+                      const Icon(Icons.add, size: 16, color: Colors.white),
+                      const SizedBox(width: 4),
+                      const Text('Add\nCategory', textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: Colors.white)),
                     ],
                   ),
                 ),
@@ -335,7 +337,10 @@ class _MenuScreenState extends State<MenuScreen> {
     return InkWell(
       onTap: () => setState(() => _selectedCategoryId = id),
       child: Container(
-        color: isSelected ? AppColors.rubyDark : Colors.transparent,
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.rubyDark : Colors.transparent,
+          border: Border(bottom: BorderSide(color: AppColors.rubyDark.withValues(alpha: 0.1), width: 1)),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
@@ -447,13 +452,7 @@ class _MenuScreenState extends State<MenuScreen> {
       categoryName = _categories.firstWhere((c) => c.id == item.categoryId).name;
     } catch (_) {}
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: AppShadows.card,
-      ),
-      clipBehavior: Clip.antiAlias,
+    return HoverableCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -574,6 +573,38 @@ class _MenuScreenState extends State<MenuScreen> {
         const SizedBox(height: 16),
         ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
       ]),
+    );
+  }
+}
+
+class HoverableCard extends StatefulWidget {
+  final Widget child;
+  const HoverableCard({Key? key, required this.child}) : super(key: key);
+
+  @override
+  State<HoverableCard> createState() => _HoverableCardState();
+}
+
+class _HoverableCardState extends State<HoverableCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.rubyDark.withValues(alpha: 0.5), width: 1),
+          boxShadow: _isHovered ? AppShadows.glow : AppShadows.card,
+        ),
+        clipBehavior: Clip.antiAlias,
+        transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+        child: widget.child,
+      ),
     );
   }
 }
