@@ -10,94 +10,115 @@ class StaffLandingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.ivory,
-      body: Column(
-        children: [
-          // ── Header ────────────────────────────────────────────────────────
-          Container(
-            width: double.infinity,
-            color: AppColors.rubyDark,
-            padding: const EdgeInsets.fromLTRB(32, 40, 32, 24),
-            child: SafeArea(
-              bottom: false,
+      backgroundColor: AppColors.rubyDark, // Solid background as requested
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () => context.go('/admin/dashboard'),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  // ── Header (Back Button) ───────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        onPressed: () => context.go('/admin/dashboard'),
+                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white70),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.05),
+                          padding: const EdgeInsets.all(12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  
+                  // ── Title Section ───────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
                       children: [
-                        const Icon(Icons.arrow_back, color: AppColors.gold, size: 16),
-                        const SizedBox(width: 8),
-                        Text('Back to Dashboard',
-                            style: GoogleFonts.inter(color: AppColors.gold, fontSize: 14)),
+                        Text(
+                          'Staff Management',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.playfairDisplay(
+                            color: Colors.white,
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
+                          ),
+                        ).animate().fadeIn().slideY(begin: 0.1),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Select a role to manage credentials and access.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            color: AppColors.gold.withOpacity(0.9),
+                            fontSize: 16,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ).animate().fadeIn(delay: 200.ms),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text('Staff Management',
-                      style: GoogleFonts.playfairDisplay(
-                          color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('Select a staff category to manage',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 14)),
+
+                  const SizedBox(height: 50),
+
+                  // ── Cards Section ───────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Wrap(
+                      spacing: 40,
+                      runSpacing: 30,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _StaffTypeCard(
+                          title: 'Billing Staff',
+                          description: 'Manage cashier terminals and transaction logs.',
+                          icon: Icons.receipt_long_rounded,
+                          role: 'cashier',
+                          index: 0,
+                        ),
+                        _StaffTypeCard(
+                          title: 'Serving Staff',
+                          description: 'Manage floor staff and service assignments.',
+                          icon: Icons.restaurant_rounded,
+                          role: 'server',
+                          index: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
-          Container(height: 4, color: AppColors.gold),
-
-          // ── Two Option Cards ──────────────────────────────────────────────
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: LayoutBuilder(builder: (ctx, constraints) {
-                  final isWide = constraints.maxWidth > 600;
-                  return Flex(
-                    direction: isWide ? Axis.horizontal : Axis.vertical,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _StaffTypeCard(
-                        title: 'Serving Staff',
-                        icon: Icons.room_service_rounded,
-                        accentColor: AppColors.rubyRed,
-                        role: 'server',
-                        index: 0,
-                      ),
-                      SizedBox(width: isWide ? 32 : 0, height: isWide ? 0 : 24),
-                      _StaffTypeCard(
-                        title: 'Billing Staff',
-                        icon: Icons.point_of_sale_rounded,
-                        accentColor: const Color(0xFF1D6B8B),
-                        role: 'cashier',
-                        index: 1,
-                      ),
-                    ],
-                  );
-                }),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _StaffTypeCard extends StatefulWidget {
-  final String title, role;
+  final String title, description, role;
   final IconData icon;
-  final Color accentColor;
   final int index;
 
   const _StaffTypeCard({
     required this.title,
-    required this.icon,
-    required this.accentColor,
+    required this.description,
     required this.role,
+    required this.icon,
     required this.index,
   });
 
@@ -106,90 +127,79 @@ class _StaffTypeCard extends StatefulWidget {
 }
 
 class _StaffTypeCardState extends State<_StaffTypeCard> {
-  bool _hovered = false;
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () => context.go('/admin/dashboard/staff/${widget.role}'),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 280,
-          padding: const EdgeInsets.all(32),
-          transform: Matrix4.translationValues(0, _hovered ? -6 : 0, 0),
+          duration: const Duration(milliseconds: 300),
+          width: 320,
+          padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.white.withOpacity(_isHovered ? 0.1 : 0.05),
+            borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: _hovered
-                  ? widget.accentColor.withValues(alpha: 0.6)
-                  : AppColors.borderLight,
-              width: _hovered ? 2 : 1,
+              color: Colors.white.withOpacity(_isHovered ? 0.2 : 0.08),
+              width: 1,
             ),
-            boxShadow: _hovered
-                ? [
-                    BoxShadow(
-                      color: widget.accentColor.withValues(alpha: 0.25),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
-                    )
-                  ]
-                : AppShadows.card,
+            boxShadow: [
+              if (_isHovered)
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                )
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: widget.accentColor.withValues(alpha: _hovered ? 0.15 : 0.08),
+              // ── Icon Container ──────────────────────────────────
+              Container(
+                width: 88,
+                height: 88,
+                decoration: const BoxDecoration(
+                  color: AppColors.gold,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: widget.accentColor.withValues(alpha: _hovered ? 0.6 : 0.3),
-                    width: 1.5,
-                  ),
                 ),
-                child: Icon(widget.icon, color: widget.accentColor, size: 40),
+                child: Icon(
+                  widget.icon,
+                  color: AppColors.rubyDark,
+                  size: 40,
+                ),
               ),
-              const SizedBox(height: 24),
-              Text(widget.title,
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 10),
-              const SizedBox(height: 24),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: widget.accentColor,
-                  borderRadius: BorderRadius.circular(50),
+              const SizedBox(height: 32),
+              // ── Title ───────────────────────────────────────────
+              Text(
+                widget.title,
+                style: GoogleFonts.playfairDisplay(
+                  color: Colors.white,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Manage',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        )),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-                  ],
+              ),
+              const SizedBox(height: 12),
+              // ── Description ─────────────────────────────────────
+              Text(
+                widget.description,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  height: 1.6,
                 ),
               ),
             ],
           ),
-        ).animate().fadeIn(delay: (widget.index * 100).ms).slideY(begin: 0.08),
+        ).animate().fadeIn(delay: (widget.index * 200).ms).scale(
+              begin: const Offset(0.95, 0.95),
+              curve: Curves.easeOutCirc,
+            ),
       ),
     );
   }

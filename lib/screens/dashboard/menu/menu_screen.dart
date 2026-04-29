@@ -162,7 +162,10 @@ class _MenuScreenState extends State<MenuScreen> {
   void _showManualOrderForm() async {
     await showDialog(
       context: context,
-      builder: (ctx) => ManualOrderDialog(menuItems: _items),
+      builder: (ctx) => ManualOrderDialog(
+        menuItems: _items,
+        categories: _categories,
+      ),
     );
   }
 

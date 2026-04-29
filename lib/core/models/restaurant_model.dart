@@ -102,6 +102,7 @@ class StaffMember {
   final String name;
   final String email;
   final String role;
+  final String? phone;
   final bool isActive;
 
   StaffMember({
@@ -109,6 +110,7 @@ class StaffMember {
     required this.name,
     required this.email,
     required this.role,
+    this.phone,
     required this.isActive,
   });
 
@@ -118,6 +120,7 @@ class StaffMember {
       name: json['name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       role: json['role']?.toString() ?? 'server',
+      phone: json['phone']?.toString(),
       isActive: json['is_active'] == true || json['is_active'] == 1,
     );
   }
@@ -130,6 +133,7 @@ class TableModel {
   final int capacity;
   final bool isActive;
   final String? qrCode;
+  final String status; // 'EMPTY' or 'OCCUPIED'
 
   TableModel({
     required this.id,
@@ -137,6 +141,7 @@ class TableModel {
     required this.capacity,
     required this.isActive,
     this.qrCode,
+    this.status = 'EMPTY',
   });
 
   factory TableModel.fromJson(Map<String, dynamic> json) {
@@ -145,7 +150,8 @@ class TableModel {
       tableNumber: json['table_number']?.toString() ?? '',
       capacity: int.tryParse(json['capacity']?.toString() ?? '4') ?? 4,
       isActive: json['is_active'] == true || json['is_active'] == 1,
-      qrCode: json['qr_code']?.toString(),
+      qrCode: (json['qr_token'] ?? json['qr_code'])?.toString(),
+      status: json['table_status']?.toString().toUpperCase() ?? 'EMPTY',
     );
   }
 }

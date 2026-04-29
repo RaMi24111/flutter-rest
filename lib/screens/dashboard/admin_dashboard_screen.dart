@@ -23,26 +23,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     });
   }
 
-  final _menuItems = [
-    const _DashCard(
+  final _dashboardOptions = [
+    const _DashOption(
       title: 'Menu Management',
       description: 'Add, update, or remove menu items.',
       icon: Icons.restaurant_menu_rounded,
       route: '/admin/dashboard/menu',
     ),
-    const _DashCard(
+    const _DashOption(
       title: 'Staff Management',
       description: 'Manage billing and serving staff credentials.',
-      icon: Icons.people_rounded,
+      icon: Icons.people_outline_rounded,
       route: '/admin/dashboard/staff',
     ),
-    const _DashCard(
+    const _DashOption(
       title: 'Table Details',
       description: 'Configure layout, view status, and QR codes.',
       icon: Icons.grid_view_rounded,
       route: '/admin/dashboard/tables',
     ),
-    const _DashCard(
+    const _DashOption(
       title: 'Order Bill',
       description: 'View daily orders and billing history.',
       icon: Icons.receipt_long_rounded,
@@ -56,83 +56,62 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final restaurantProv = context.watch<RestaurantProvider>();
     final restaurant = restaurantProv.restaurant;
     final size = MediaQuery.of(context).size;
-    final isWide = size.width > 600;
+    final isWide = size.width > 900;
 
     return Scaffold(
-      backgroundColor: AppColors.ivory,
+      backgroundColor: const Color(0xFFF8F5F2),
       body: Column(
         children: [
-          // ── Header ─────────────────────────────────────────────────────────
-          _buildHeader(context, auth, restaurant, isWide),
+          // ── Header Section ──────────────────────────────────────────────────
+          _buildHeader(context, auth, restaurant),
 
-          // ── Loading indicator ──────────────────────────────────────────────
-          if (restaurantProv.isLoading)
-            const LinearProgressIndicator(
-              backgroundColor: AppColors.ivoryDark,
-              color: AppColors.rubyRed,
-            ),
-
-          // ── API Error Banner ───────────────────────────────────────────────
-          if (restaurantProv.error != null)
-            Container(
-              margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEE2E2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFCA5A5)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline,
-                      color: Color(0xFFDC2626), size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      restaurantProv.error!
-                          .replaceAll('Exception: ', ''),
-                      style: const TextStyle(
-                          fontSize: 13, color: Color(0xFFDC2626)),
+          // ── Main Body Section ───────────────────────────────────────────────
+          Expanded(
+            child: Stack(
+              children: [
+                // Background Image with Overlay
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.05,
+                    child: Image.network(
+                      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () =>
-                        context.read<RestaurantProvider>().fetchRestaurant(),
-                    child: const Text('Retry',
-                        style: TextStyle(color: Color(0xFFDC2626))),
+                ),
+                
+                // Dashboard Cards
+                SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isWide ? 80 : 20,
+                    vertical: 60,
                   ),
-                ],
-              ),
-            ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: LayoutBuilder(builder: (ctx, constraints) {
+                        final cols = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 600 ? 2 : 1);
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: cols,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                            childAspectRatio: 0.95,
+                          ),
+                          itemCount: _dashboardOptions.length,
+                          itemBuilder: (ctx, i) => _buildOptionCard(context, _dashboardOptions[i], i),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
 
-          // ── Inactive restaurant warning ────────────────────────────────────
-          if (restaurant != null && !restaurant.isActive)
-            _buildWarningBanner(restaurant.name),
-
-          // ── Dashboard Cards ────────────────────────────────────────────────
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(isWide ? 40 : 20),
-              child: LayoutBuilder(builder: (ctx, constraints) {
-                final cols = constraints.maxWidth > 700
-                    ? 4
-                    : constraints.maxWidth > 480
-                        ? 2
-                        : 1;
-                const spacing = 20.0;
-                final cardW =
-                    (constraints.maxWidth - (cols - 1) * spacing) / cols;
-                return Wrap(
-                  spacing: spacing,
-                  runSpacing: spacing,
-                  children: _menuItems.asMap().entries.map((e) {
-                    return SizedBox(
-                      width: cardW,
-                      child: _buildCard(context, e.value, e.key),
-                    );
-                  }).toList(),
-                );
-              }),
+                // Loading / Error Banners
+                if (restaurantProv.isLoading)
+                  const LinearProgressIndicator(color: AppColors.rubyRed),
+              ],
             ),
           ),
         ],
@@ -140,245 +119,189 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, AuthProvider auth,
-      dynamic restaurant, bool isWide) {
+  Widget _buildHeader(BuildContext context, AuthProvider auth, dynamic restaurant) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.rubyRed,
-        boxShadow: AppShadows.elevated,
-        border: const Border(
-          bottom: BorderSide(color: AppColors.gold, width: 4),
-        ),
+      decoration: const BoxDecoration(
+        color: AppColors.rubyDark,
+        border: Border(bottom: BorderSide(color: AppColors.gold, width: 4)),
       ),
-      padding: EdgeInsets.fromLTRB(isWide ? 48 : 20, 48, isWide ? 48 : 20, 32),
-      child: Stack(
-        children: [
-          // centered title
-          Center(
-            child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Spacer(),
+            // Centered Brand Info
+            Column(
               children: [
                 Text(
-                  restaurant?.name ?? 'Admin Dashboard',
+                  restaurant?.name ?? 'Restaurant Admin',
                   style: GoogleFonts.playfairDisplay(
-                    fontSize: isWide ? 44 : 28,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 42,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      restaurant?.restaurantType ??
-                          'Oversee your fine dining operations',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: AppColors.gold.withValues(alpha: 0.9),
-                        letterSpacing: 1.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (restaurant != null) ...[
-                      const SizedBox(width: 10),
-                      _StatusBadge(isActive: restaurant.isActive),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // logout button — top right
-          Positioned(
-            right: 0,
-            top: 0,
-            child: PopupMenuButton<String>(
-              offset: const Offset(0, 48),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                ),
-                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.person_outline,
-                        color: Colors.white, size: 18),
-                    const SizedBox(width: 8),
                     Text(
-                      auth.userEmail ?? 'Admin',
+                      (restaurant?.restaurantType ?? 'CAFE').toUpperCase(),
                       style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white),
+                        fontSize: 14,
+                        color: AppColors.gold,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.expand_more,
-                        color: Colors.white, size: 18),
+                    const SizedBox(width: 12),
+                    _StatusBadge(isActive: restaurant?.isActive ?? true),
                   ],
                 ),
-              ),
-              itemBuilder: (_) => [
-                const PopupMenuItem(
-                  value: 'profile',
-                  child: Row(children: [
-                    Icon(Icons.business_outlined, size: 18),
-                    SizedBox(width: 10),
-                    Text('Restaurant Profile'),
-                  ]),
+              ],
+            ),
+            const Spacer(),
+            // Right Side Profile & Logout
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.person_pin_rounded, color: AppColors.gold, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        auth.userEmail ?? 'admin@restaurant.com',
+                        style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
-                const PopupMenuItem(
-                  value: 'logout',
-                  child: Row(children: [
-                    Icon(Icons.logout, size: 18, color: AppColors.danger),
-                    SizedBox(width: 10),
-                    Text('Logout',
-                        style: TextStyle(color: AppColors.danger)),
-                  ]),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await auth.logout();
+                    if (context.mounted) context.go('/admin/login');
+                  },
+                  icon: const Icon(Icons.logout_rounded, size: 16, color: Colors.white),
+                  label: Text('Logout', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
                 ),
               ],
-              onSelected: (val) async {
-                if (val == 'logout') {
-                  await context.read<AuthProvider>().logout();
-                  if (context.mounted) context.go('/admin/login');
-                } else if (val == 'profile') {
-                  context.go('/admin/dashboard/profile');
-                }
-              },
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWarningBanner(String name) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF3C7),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFF59E0B)),
-      ),
-      child: Row(children: [
-        const Icon(Icons.warning_amber_rounded,
-            color: Color(0xFFD97706), size: 20),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'Your restaurant "$name" is currently inactive. Please contact support.',
-            style:
-                GoogleFonts.inter(fontSize: 13, color: const Color(0xFF92400E)),
-          ),
+          ],
         ),
-      ]),
+      ),
     );
   }
 
-  Widget _buildCard(BuildContext context, _DashCard item, int index) {
+  Widget _buildOptionCard(BuildContext context, _DashOption option, int index) {
     return GestureDetector(
-      onTap: () => context.go(item.route),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: AppShadows.card,
-            border: Border.all(color: AppColors.borderLight),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: const BoxDecoration(
-                  color: AppColors.ivory,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(item.icon, color: AppColors.rubyRed, size: 36),
+      onTap: () => context.go(option.route),
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.08),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 18),
-              Text(item.title,
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text(item.description,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textMuted,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center),
-            ],
-          ),
-        ).animate().fadeIn(delay: (index * 80).ms).slideY(begin: 0.1),
-      ),
+              child: Icon(option.icon, color: AppColors.rubyDark, size: 36),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              option.title,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.rubyDark,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              option.description,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ).animate().fadeIn(delay: (index * 100).ms).slideY(begin: 0.1, curve: Curves.easeOutCirc),
     );
   }
 }
 
-class _DashCard {
+class _DashOption {
   final String title, description, route;
   final IconData icon;
-  const _DashCard(
-      {required this.title,
-      required this.description,
-      required this.icon,
-      required this.route});
+  const _DashOption({required this.title, required this.description, required this.icon, required this.route});
 }
 
 class _StatusBadge extends StatelessWidget {
   final bool isActive;
   const _StatusBadge({required this.isActive});
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isActive
-            ? AppColors.success.withValues(alpha: 0.15)
-            : AppColors.warning.withValues(alpha: 0.15),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(
-          color: isActive
-              ? AppColors.success.withValues(alpha: 0.4)
-              : AppColors.warning.withValues(alpha: 0.4),
-        ),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Container(
-          width: 7,
-          height: 7,
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.success : AppColors.warning,
-            shape: BoxShape.circle,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
           ),
-        ),
-        const SizedBox(width: 6),
-        Text(isActive ? 'ACTIVE' : 'INACTIVE',
+          const SizedBox(width: 8),
+          Text(
+            isActive ? 'ACTIVE' : 'INACTIVE',
             style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-              color: isActive ? AppColors.success : AppColors.warning,
-            )),
-      ]),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: Colors.green.shade700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
-
-
