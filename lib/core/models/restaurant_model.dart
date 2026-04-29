@@ -163,7 +163,9 @@ class OrderModel {
   final String orderType;
   final double totalAmount;
   final String paymentStatus;
+  final String? paymentMethod;
   final String createdAt;
+  final String? updatedAt;
   final String? tableNumber;
   final List<OrderItem> items;
 
@@ -173,7 +175,9 @@ class OrderModel {
     required this.orderType,
     required this.totalAmount,
     required this.paymentStatus,
+    this.paymentMethod,
     required this.createdAt,
+    this.updatedAt,
     this.tableNumber,
     this.items = const [],
   });
@@ -183,15 +187,18 @@ class OrderModel {
     return OrderModel(
       id: json['id']?.toString() ?? '',
       status: json['status']?.toString() ?? 'PLACED',
-      orderType: json['order_type']?.toString() ?? 'DINE_IN',
-      totalAmount:
-          double.tryParse(json['total_amount']?.toString() ?? '0') ?? 0,
-      paymentStatus: json['payment_status']?.toString() ?? 'UNPAID',
-      createdAt: json['created_at']?.toString() ?? '',
-      tableNumber: json['table_number']?.toString(),
+      orderType: (json['order_type'] ?? json['orderType'])?.toString() ?? 'DINE_IN',
+      totalAmount: double.tryParse(json['total_amount']?.toString() ?? json['totalAmount']?.toString() ?? '0') ?? 0,
+      paymentStatus: (json['payment_status'] ?? json['paymentStatus'])?.toString() ?? 'PENDING',
+      paymentMethod: (json['payment_method'] ?? json['paymentMethod'])?.toString(),
+      createdAt: (json['created_at'] ?? json['createdAt'])?.toString() ?? '',
+      updatedAt: (json['updated_at'] ?? json['updatedAt'])?.toString(),
+      tableNumber: (json['table_number'] ?? json['tableNumber'])?.toString(),
       items: rawItems.map((i) => OrderItem.fromJson(i)).toList(),
     );
   }
+
+  double get calculatedSubtotal => items.fold(0, (sum, item) => sum + (item.price * item.quantity));
 }
 
 class OrderItem {
@@ -202,8 +209,18 @@ class OrderItem {
   OrderItem({required this.name, required this.quantity, required this.price});
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
+    // Check nested menu_item or item_name
+    String itemName = 'Unknown Item';
+    if (json['name'] != null) {
+      itemName = json['name'].toString();
+    } else if (json['item_name'] != null) {
+      itemName = json['item_name'].toString();
+    } else if (json['menu_item'] != null && json['menu_item']['name'] != null) {
+      itemName = json['menu_item']['name'].toString();
+    }
+
     return OrderItem(
-      name: json['name']?.toString() ?? '',
+      name: itemName,
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
     );
