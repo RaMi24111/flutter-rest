@@ -8,6 +8,7 @@ import 'package:restaurant_admin/services/menu_service.dart';
 import 'category_form_dialog.dart';
 import 'item_form_dialog.dart';
 import 'manual_order_dialog.dart';
+import 'today_special_dialog.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -165,6 +166,17 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+  void _showTodaySpecialDialog() async {
+    final result = await showDialog(
+      context: context,
+      builder: (ctx) => TodaySpecialDialog(
+        categories: _categories,
+        allItems: _items,
+      ),
+    );
+    if (result == true) _loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 800;
@@ -246,6 +258,18 @@ class _MenuScreenState extends State<MenuScreen> {
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.gold, width: 2),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: () => _showTodaySpecialDialog(),
+                  icon: const Text('⭐', style: TextStyle(fontSize: 16)),
+                  label: Text("Today's Special",
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.white54, width: 1.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),

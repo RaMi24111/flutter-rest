@@ -60,11 +60,9 @@ class _StaffScreenState extends State<StaffScreen> {
         _staff = list.where((s) {
           final r = s.role.toLowerCase().trim();
           if (widget.role == 'server') {
-            // Match: server, serving, waiter, serving_staff, etc.
-            return r == 'server' || r.contains('serv') || r == 'waiter' || r == 'serving';
+            return r == 'serving_staff' || r == 'server' || r.contains('serv') || r == 'waiter';
           } else {
-            // Match: cashier, billing, billing_staff, counter, etc.
-            return r == 'cashier' || r.contains('cash') || r.contains('bill') || r == 'counter';
+            return r == 'billing_staff' || r == 'cashier' || r.contains('bill') || r.contains('cash');
           }
         }).toList();
       });

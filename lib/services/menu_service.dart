@@ -23,14 +23,8 @@ class MenuService {
   }
 
   static Future<MenuCategory> createCategory(Map<String, dynamic> body) async {
-    // API is currently failing, mocking the response for UI functionality
-    await Future.delayed(const Duration(seconds: 1));
-    return MenuCategory.fromJson({
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'name': body['name'],
-      'description': body['description'],
-      'items': []
-    });
+    final data = await ApiService.post(ApiEndpoints.menuCategories, body, requiresAuth: true);
+    return MenuCategory.fromJson(data as Map<String, dynamic>);
   }
 
   static Future<MenuCategory> updateCategory(String id, Map<String, dynamic> body) async {
@@ -64,11 +58,8 @@ class MenuService {
   }
 
   static Future<MenuItem> updateItem(String id, Map<String, dynamic> body) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return MenuItem.fromJson({
-      'id': id,
-      ...body
-    });
+    final data = await ApiService.put(ApiEndpoints.menuItemById(id), body, requiresAuth: true);
+    return MenuItem.fromJson(data as Map<String, dynamic>);
   }
 
   static Future<void> deleteItem(String itemId) async {
