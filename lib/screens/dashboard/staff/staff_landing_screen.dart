@@ -10,100 +10,139 @@ class StaffLandingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.rubyDark, // Solid background as requested
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1000),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: AppColors.ivory,
+      body: Stack(
+        children: [
+          // Light Elegant "Foggy" Background
+          Positioned.fill(
+            child: Container(
+              color: AppColors.ivory,
+              child: Stack(
                 children: [
-                  // ── Header (Back Button) ───────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        onPressed: () => context.go('/admin/dashboard'),
-                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white70),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.05),
-                          padding: const EdgeInsets.all(12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
+                  Opacity(
+                    opacity: 0.1,
+                    child: Image.network(
+                      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white,
+                          Colors.white.withOpacity(0.0),
+                        ],
+                        stops: const [0.0, 0.3],
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 20),
-                  
-                  // ── Title Section ───────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Staff Management',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.playfairDisplay(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
-                          ),
-                        ).animate().fadeIn().slideY(begin: 0.1),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Select a role to manage credentials and access.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            color: AppColors.gold.withOpacity(0.9),
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ).animate().fadeIn(delay: 200.ms),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 50),
-
-                  // ── Cards Section ───────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Wrap(
-                      spacing: 40,
-                      runSpacing: 30,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        _StaffTypeCard(
-                          title: 'Billing Staff',
-                          description: 'Manage cashier terminals and transaction logs.',
-                          icon: Icons.receipt_long_rounded,
-                          role: 'cashier',
-                          index: 0,
-                        ),
-                        _StaffTypeCard(
-                          title: 'Serving Staff',
-                          description: 'Manage floor staff and service assignments.',
-                          icon: Icons.restaurant_rounded,
-                          role: 'server',
-                          index: 1,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
+                  // Animated Golden Circles
+                  const _AnimatedGoldenCircles(),
                 ],
               ),
             ),
           ),
-        ),
+
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1000),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // ── Header (Back Button) ───────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            onPressed: () => context.go('/admin/dashboard'),
+                            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.rubyDark),
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.rubyDark.withOpacity(0.05),
+                              padding: const EdgeInsets.all(12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                      
+                      // ── Title Section ───────────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Staff Management',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.playfairDisplay(
+                                color: AppColors.rubyDark,
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.5,
+                              ),
+                            ).animate().fadeIn().slideY(begin: 0.1),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Select a role to manage credentials and access.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                color: AppColors.rubyDark.withOpacity(0.7),
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ).animate().fadeIn(delay: 200.ms),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 60),
+
+                      // ── Cards Section ───────────────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Wrap(
+                          spacing: 40,
+                          runSpacing: 30,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            _StaffTypeCard(
+                              title: 'Billing Staff',
+                              description: 'Manage cashier terminals and transaction logs.',
+                              icon: Icons.receipt_long_rounded,
+                              role: 'cashier',
+                              index: 0,
+                            ),
+                            _StaffTypeCard(
+                              title: 'Serving Staff',
+                              description: 'Manage floor staff and service assignments.',
+                              icon: Icons.restaurant_rounded,
+                              role: 'server',
+                              index: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -134,42 +173,51 @@ class _StaffTypeCardState extends State<_StaffTypeCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => context.go('/admin/dashboard/staff/${widget.role}'),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: 320,
-          padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
+          height: 320, // Square like the dashboard
+          padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(_isHovered ? 0.1 : 0.05),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: Colors.white.withOpacity(_isHovered ? 0.2 : 0.08),
+              color: _isHovered ? AppColors.gold : AppColors.rubyDark,
               width: 1,
             ),
             boxShadow: [
-              if (_isHovered)
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 30,
-                  offset: const Offset(0, 15),
-                )
+              BoxShadow(
+                color: AppColors.rubyDark.withOpacity(0.12),
+                blurRadius: _isHovered ? 30 : 20,
+                offset: Offset(0, _isHovered ? 15 : 10),
+              )
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // ── Icon Container ──────────────────────────────────
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
                 width: 88,
                 height: 88,
-                decoration: const BoxDecoration(
-                  color: AppColors.gold,
+                decoration: BoxDecoration(
+                  color: _isHovered ? AppColors.rubyDark : AppColors.gold,
                   shape: BoxShape.circle,
+                  boxShadow: _isHovered ? [
+                    BoxShadow(
+                      color: AppColors.rubyDark.withOpacity(0.4),
+                      blurRadius: 20,
+                      spreadRadius: 4,
+                    )
+                  ] : null,
                 ),
                 child: Icon(
                   widget.icon,
-                  color: AppColors.rubyDark,
+                  color: _isHovered ? Colors.white : AppColors.rubyDark,
                   size: 40,
                 ),
               ),
@@ -178,8 +226,8 @@ class _StaffTypeCardState extends State<_StaffTypeCard> {
               Text(
                 widget.title,
                 style: GoogleFonts.playfairDisplay(
-                  color: Colors.white,
-                  fontSize: 30,
+                  color: AppColors.rubyDark,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -189,7 +237,7 @@ class _StaffTypeCardState extends State<_StaffTypeCard> {
                 widget.description,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  color: Colors.white70,
+                  color: Colors.grey.shade500,
                   fontSize: 14,
                   height: 1.6,
                 ),
@@ -200,6 +248,49 @@ class _StaffTypeCardState extends State<_StaffTypeCard> {
               begin: const Offset(0.95, 0.95),
               curve: Curves.easeOutCirc,
             ),
+      ),
+    );
+  }
+}
+
+class _AnimatedGoldenCircles extends StatelessWidget {
+  const _AnimatedGoldenCircles();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Stack(
+        children: List.generate(4, (index) {
+          final delay = index * 1.5;
+          return Align(
+            alignment: Alignment.center,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.gold.withOpacity(0.15), // Thin, hollow, golden, subtle
+                  width: 1.5,
+                ),
+              ),
+            ).animate(
+              onPlay: (controller) => controller.repeat(),
+            ).scale(
+              duration: 6.seconds, 
+              delay: delay.seconds,
+              begin: const Offset(1, 1), 
+              end: const Offset(15, 15), // Expands outward
+              curve: Curves.easeOutCubic,
+            ).fade(
+              duration: 6.seconds,
+              delay: delay.seconds,
+              begin: 1.0,
+              end: 0.0,
+              curve: Curves.easeOutCubic,
+            ),
+          );
+        }),
       ),
     );
   }

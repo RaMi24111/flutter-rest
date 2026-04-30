@@ -13,7 +13,7 @@ class ApiEndpoints {
 
   static const String menuCategories = '/api/admin/categories';
   static const String menuCategoriesList = '/api/admin/menu/categories';
-  static String menuCategoryById(String id) => '/api/admin/categories/$id';
+  static String menuCategoryById(String id) => '/api/admin/menu/categories/$id';
   
   static const String menuItems = '/api/admin/menu/items';
   static const String menuItemsList = '/api/admin/menu/items';

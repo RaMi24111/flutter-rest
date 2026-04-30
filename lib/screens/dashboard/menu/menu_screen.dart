@@ -296,56 +296,56 @@ class _MenuScreenState extends State<MenuScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: AppColors.rubyDark.withValues(alpha: 0.3), width: 1),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: AppShadows.card,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      clipBehavior: Clip.antiAlias,
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                const Icon(Icons.folder_open, color: AppColors.rubyRed),
-                const SizedBox(width: 8),
-                Text('Categories', style: GoogleFonts.playfairDisplay(fontSize: 20, fontWeight: FontWeight.bold)),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: () => _showCategoryForm(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.rubyDark,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    minimumSize: Size.zero,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.add, size: 16, color: Colors.white),
-                      const SizedBox(width: 4),
-                      const Text('Add\nCategory', textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ],
+          Row(
+            children: [
+              const Icon(Icons.folder_outlined, color: AppColors.rubyDark),
+              const SizedBox(width: 8),
+              Text('Categories', style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.rubyDark)),
+            ],
+          ),
+          const SizedBox(height: 20),
+          OutlinedButton.icon(
+            onPressed: () => _showCategoryForm(),
+            icon: const Icon(Icons.add, size: 18),
+            label: Text('Add Category', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.rubyDark,
+              side: const BorderSide(color: AppColors.rubyDark, width: 1.5),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
-          const Divider(height: 1),
+          const SizedBox(height: 16),
           _buildSidebarItem(
             id: '',
             name: 'All Items',
             description: 'View all',
             isSelected: _selectedCategoryId.isEmpty,
           ),
+          const SizedBox(height: 12),
           Expanded(
-            child: ListView.builder(
+            child: ListView.separated(
               itemCount: _categories.length + 1,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (ctx, i) {
                 if (i == 0) {
                   return _buildSidebarItem(
                     id: 'SPECIALS',
                     name: '🔥 Today\'s Special',
-                    description: 'Featured items for today',
+                    description: 'Featured items',
                     isSelected: _selectedCategoryId == 'SPECIALS',
                   );
                 }
@@ -366,12 +366,43 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _buildSidebarItem({required String id, required String name, required String description, required bool isSelected, MenuCategory? category}) {
+    if (id == '') {
+      // All Items specific style
+      return InkWell(
+        onTap: () => setState(() => _selectedCategoryId = id),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.rubyDark,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(name, style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('View all', style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return InkWell(
       onTap: () => setState(() => _selectedCategoryId = id),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.rubyDark : Colors.transparent,
-          border: Border(bottom: BorderSide(color: AppColors.rubyDark.withValues(alpha: 0.1), width: 1)),
+          color: isSelected ? AppColors.rubyDark.withOpacity(0.02) : Colors.white,
+          border: Border.all(color: isSelected ? AppColors.rubyDark.withOpacity(0.5) : Colors.grey.shade200, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
@@ -382,33 +413,43 @@ class _MenuScreenState extends State<MenuScreen> {
                 children: [
                   Text(name, style: GoogleFonts.inter(
                     fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : AppColors.textDark,
+                    color: AppColors.rubyDark,
+                    fontSize: 15,
                   )),
-                  if (description.isNotEmpty) ...[
+                  if (description.isNotEmpty && id != 'SPECIALS') ...[
+                    const SizedBox(height: 4),
+                    Text(description.toUpperCase(), style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade500,
+                      letterSpacing: 0.5,
+                    ), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ] else if (description.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(description, style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isSelected ? Colors.white70 : AppColors.textMuted,
-                    ), maxLines: 2, overflow: TextOverflow.ellipsis),
+                      color: AppColors.textMuted,
+                    ), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ]
                 ],
               ),
             ),
             if (category != null && isSelected) ...[
               IconButton(
-                icon: const Icon(Icons.edit, size: 16, color: Colors.white),
+                icon: Icon(Icons.edit, size: 16, color: AppColors.rubyDark.withOpacity(0.6)),
                 onPressed: () => _showCategoryForm(category),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
-              if (_items.where((i) => i.categoryId == category.id).isEmpty)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 16, color: Colors.redAccent),
-                  onPressed: () => _deleteCategory(category.id),
-                  padding: const EdgeInsets.only(left: 8),
-                  constraints: const BoxConstraints(),
-                )
-            ]
+              const SizedBox(width: 8),
+            ],
+            if (category != null && _items.where((i) => i.categoryId == category.id).isEmpty)
+              IconButton(
+                icon: Icon(Icons.delete_outline, size: 16, color: Colors.grey.shade400),
+                onPressed: () => _deleteCategory(category.id),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              )
           ],
         ),
       ),
