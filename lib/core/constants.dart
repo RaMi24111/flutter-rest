@@ -11,11 +11,18 @@ class ApiEndpoints {
   static const String restaurant = '/api/admin/restaurant';
   static const String profile = '/api/admin/profile';
 
-  static const String menuCategories = '/api/admin/menu/categories';
-  static String menuCategoryById(String id) => '/api/admin/menu/categories/$id';
+  static const String menuCategories = '/api/admin/categories';
+  static const String menuCategoriesList = '/api/admin/menu/categories';
+  static String menuCategoryById(String id) => '/api/admin/categories/$id';
+  
   static const String menuItems = '/api/admin/menu/items';
+  static const String menuItemsList = '/api/admin/menu/items';
+  // For GET by ID — uses /menu/ prefix
   static String menuItemById(String id) => '/api/admin/menu/items/$id';
+  // For PUT/PATCH/DELETE mutations — uses direct route (no /menu/ prefix)
+  static String itemAction(String id) => '/api/admin/items/$id';
   static String toggleMenuItem(String id) => '/api/admin/menu/items/$id/toggle';
+
 
   static const String staffList = '/api/admin/staff';
   static String staffById(String id) => '/api/admin/staff/$id';

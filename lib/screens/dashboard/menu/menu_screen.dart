@@ -52,9 +52,14 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-  List<MenuItem> get _filteredItems => _selectedCategoryId.isEmpty
-      ? _items
-      : _items.where((i) => i.categoryId == _selectedCategoryId).toList();
+  List<MenuItem> get _filteredItems {
+    if (_selectedCategoryId == 'SPECIALS') {
+      return _items.where((i) => i.isSpecial).toList();
+    }
+    return _selectedCategoryId.isEmpty
+        ? _items
+        : _items.where((i) => i.categoryId == _selectedCategoryId).toList();
+  }
 
   Future<void> _toggleItem(String id) async {
     try {
@@ -72,6 +77,7 @@ class _MenuScreenState extends State<MenuScreen> {
             imageUrl: item.imageUrl,
             categoryId: item.categoryId,
             preparationTime: item.preparationTime,
+            isSpecial: item.isSpecial,
           );
         }
       });
@@ -82,30 +88,21 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-  Future<void> _deleteItem(String id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Item'),
-        content: const Text('Are you sure you want to delete this item?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.pop(ctx, true), 
-            child: const Text('Delete')
-          ),
-        ],
-      )
-    );
-    
-    if (confirm != true) return;
-    
+
+
+  Future<void> _toggleSpecial(String id) async {
+    final item = _items.firstWhere((i) => i.id == id);
     try {
-      await MenuService.deleteItem(id);
+      await MenuService.updateSpecialStatus(id, !item.isSpecial);
       _loadData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(!item.isSpecial ? 'Added to Today\'s Special' : 'Removed from Specials'),
+          backgroundColor: AppColors.rubyDark,
+        ),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${e.toString()}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
     }
   }
 
@@ -342,9 +339,17 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: _categories.length,
+              itemCount: _categories.length + 1,
               itemBuilder: (ctx, i) {
-                final cat = _categories[i];
+                if (i == 0) {
+                  return _buildSidebarItem(
+                    id: 'SPECIALS',
+                    name: '🔥 Today\'s Special',
+                    description: 'Featured items for today',
+                    isSelected: _selectedCategoryId == 'SPECIALS',
+                  );
+                }
+                final cat = _categories[i - 1];
                 return _buildSidebarItem(
                   id: cat.id,
                   name: cat.name,
@@ -503,7 +508,29 @@ class _MenuScreenState extends State<MenuScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(item.name, style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(item.name, 
+                                style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.bold), 
+                                maxLines: 1, 
+                                overflow: TextOverflow.ellipsis
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              onPressed: () => _toggleSpecial(item.id),
+                              icon: Icon(
+                                item.isSpecial ? Icons.star : Icons.star_border,
+                                color: item.isSpecial ? AppColors.gold : AppColors.textMuted,
+                                size: 20,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              tooltip: 'Toggle Today\'s Special',
+                            ),
+                          ],
+                        ),
                       ),
                       Text('₹${item.price.toStringAsFixed(2)}', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.rubyRed)),
                     ],
@@ -515,7 +542,18 @@ class _MenuScreenState extends State<MenuScreen> {
                       color: AppColors.borderLight,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Text(categoryName, style: GoogleFonts.inter(fontSize: 10, color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(categoryName, style: GoogleFonts.inter(fontSize: 10, color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                        if (item.isSpecial) ...[
+                          const SizedBox(width: 8),
+                          const Icon(Icons.flash_on, size: 10, color: AppColors.rubyRed),
+                          const SizedBox(width: 2),
+                          Text('TODAY\'S SPECIAL', style: GoogleFonts.inter(fontSize: 10, color: AppColors.rubyRed, fontWeight: FontWeight.w800)),
+                        ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Expanded(
@@ -553,34 +591,18 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showItemForm(item),
-                          icon: const Icon(Icons.edit, size: 14),
-                          label: const Text('Edit'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.info,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                          ),
-                        ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showItemForm(item),
+                      icon: const Icon(Icons.edit, size: 14),
+                      label: const Text('Edit'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.info,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _deleteItem(item.id),
-                          icon: const Icon(Icons.delete, size: 14),
-                          label: const Text('Delete'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.danger,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   )
                 ],
               ),

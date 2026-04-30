@@ -37,7 +37,7 @@ class ApiService {
 
   /// POST request
   static Future<dynamic> post(String path, Map<String, dynamic> body,
-      {bool requiresAuth = false}) async {
+      {bool requiresAuth = true}) async {
     final headers = await _buildHeaders(requiresAuth: requiresAuth);
     print('API POST: $path | Body: ${jsonEncode(body)}');
     final response = await http

@@ -30,6 +30,7 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
   late String _imageUrl;
   String? _selectedCategoryId;
   late bool _isAvailable;
+  bool _isSpecial = false;
 
   bool _isLoading = false;
 
@@ -65,12 +66,16 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
     try {
       final body = {
         'name': _name,
-        'description': _description,
+        'description': _description.isEmpty ? null : _description,
         'price': double.tryParse(_price) ?? 0.0,
-        'preparation_time': _prepTime,
-        'image_url': _imageUrl,
+        'imageUrl': _imageUrl.isEmpty ? null : _imageUrl,
+        'image_url': _imageUrl.isEmpty ? null : _imageUrl,
+        'categoryId': _selectedCategoryId,
         'category_id': _selectedCategoryId,
+        'isAvailable': _isAvailable,
         'is_available': _isAvailable,
+        'isSpecial': _isSpecial,
+        'is_special': _isSpecial,
       };
 
       if (widget.item == null) {
@@ -137,26 +142,12 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                   onSaved: (val) => _name = val!.trim(),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: _price,
-                        decoration: const InputDecoration(labelText: 'Price (₹)', prefixText: '₹ '),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        validator: (val) => val == null || double.tryParse(val) == null ? 'Valid price required' : null,
-                        onSaved: (val) => _price = val!.trim(),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: _prepTime,
-                        decoration: const InputDecoration(labelText: 'Prep Time (e.g. 15 mins)'),
-                        onSaved: (val) => _prepTime = val?.trim() ?? '',
-                      ),
-                    ),
-                  ],
+                TextFormField(
+                  initialValue: _price,
+                  decoration: const InputDecoration(labelText: 'Price (₹)', prefixText: '₹ '),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  validator: (val) => val == null || double.tryParse(val) == null ? 'Valid price required' : null,
+                  onSaved: (val) => _price = val!.trim(),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -172,12 +163,27 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                   onSaved: (val) => _description = val?.trim() ?? '',
                 ),
                 const SizedBox(height: 16),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Available for Order'),
-                  activeColor: AppColors.success,
-                  value: _isAvailable,
-                  onChanged: (val) => setState(() => _isAvailable = val),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Available', style: TextStyle(fontSize: 14)),
+                        activeColor: AppColors.success,
+                        value: _isAvailable,
+                        onChanged: (val) => setState(() => _isAvailable = val),
+                      ),
+                    ),
+                    Expanded(
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Special', style: TextStyle(fontSize: 14)),
+                        activeColor: AppColors.rubyRed,
+                        value: _isSpecial,
+                        onChanged: (val) => setState(() => _isSpecial = val),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

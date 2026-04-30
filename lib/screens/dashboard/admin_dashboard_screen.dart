@@ -69,13 +69,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Expanded(
             child: Stack(
               children: [
-                // Background Image with Overlay
+                // Light Elegant "Foggy" Background
                 Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.05,
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
-                      fit: BoxFit.cover,
+                  child: Container(
+                    color: AppColors.ivory, // Light ivory/white base
+                    child: Stack(
+                      children: [
+                        Opacity(
+                          opacity: 0.1, // Very subtle image
+                          child: Image.network(
+                            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white,
+                                Colors.white.withOpacity(0.0),
+                              ],
+                              stops: const [0.0, 0.3],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -98,17 +120,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             crossAxisCount: cols,
                             crossAxisSpacing: 24,
                             mainAxisSpacing: 24,
-                            childAspectRatio: 0.95,
+                            childAspectRatio: 0.85, // Slightly taller cards
                           ),
                           itemCount: _dashboardOptions.length,
-                          itemBuilder: (ctx, i) => _buildOptionCard(context, _dashboardOptions[i], i),
+                          itemBuilder: (ctx, i) => _HoverableDashCard(
+                            option: _dashboardOptions[i],
+                            index: i,
+                            onTap: () => context.go(_dashboardOptions[i].route),
+                          ),
                         );
                       }),
                     ),
                   ),
                 ),
 
-                // Loading / Error Banners
                 if (restaurantProv.isLoading)
                   const LinearProgressIndicator(color: AppColors.rubyRed),
               ],
@@ -126,22 +151,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: AppColors.rubyDark,
         border: Border(bottom: BorderSide(color: AppColors.gold, width: 4)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       child: SafeArea(
         bottom: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            const Spacer(),
             // Centered Brand Info
             Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   restaurant?.name ?? 'Restaurant Admin',
                   style: GoogleFonts.playfairDisplay(
-                    fontSize: 42,
+                    fontSize: 48,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
+                    letterSpacing: 1.2,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -163,108 +189,158 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ],
             ),
-            const Spacer(),
-            // Right Side Profile & Logout
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+            
+            // Right Side Profile & Logout (Stacked)
+            Positioned(
+              right: 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.person_pin_rounded, color: AppColors.gold, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          auth.userEmail ?? 'admin@restaurant.com',
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person_pin_rounded, color: AppColors.gold, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        auth.userEmail ?? 'admin@restaurant.com',
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await auth.logout();
+                        if (context.mounted) context.go('/admin/login');
+                      },
+                      icon: const Icon(Icons.logout_rounded, size: 16, color: Colors.white),
+                      label: Text('Logout', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    await auth.logout();
-                    if (context.mounted) context.go('/admin/login');
-                  },
-                  icon: const Icon(Icons.logout_rounded, size: 16, color: Colors.white),
-                  label: Text('Logout', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.1),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildOptionCard(BuildContext context, _DashOption option, int index) {
-    return GestureDetector(
-      onTap: () => context.go(option.route),
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(option.icon, color: AppColors.rubyDark, size: 36),
+class _HoverableDashCard extends StatefulWidget {
+  final _DashOption option;
+  final int index;
+  final VoidCallback onTap;
+
+  const _HoverableDashCard({
+    required this.option,
+    required this.index,
+    required this.onTap,
+  });
+
+  @override
+  State<_HoverableDashCard> createState() => _HoverableDashCardState();
+}
+
+class _HoverableDashCardState extends State<_HoverableDashCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.all(40),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: _isHovered ? AppColors.gold.withOpacity(0.8) : Colors.transparent,
+              width: 1.5,
             ),
-            const SizedBox(height: 24),
-            Text(
-              option.title,
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.rubyDark,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_isHovered ? 0.1 : 0.05),
+                blurRadius: _isHovered ? 30 : 20,
+                offset: Offset(0, _isHovered ? 15 : 8),
+              )
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: _isHovered 
+                      ? AppColors.rubyDark 
+                      : Colors.grey.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _isHovered ? Colors.transparent : AppColors.rubyDark.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  widget.option.icon, 
+                  color: _isHovered ? Colors.white : AppColors.rubyDark, 
+                  size: 44,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              option.description,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-                height: 1.5,
+              const SizedBox(height: 32),
+              Text(
+                widget.option.title,
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.rubyDark,
+                  letterSpacing: 0.5,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ).animate().fadeIn(delay: (index * 100).ms).slideY(begin: 0.1, curve: Curves.easeOutCirc),
+              const SizedBox(height: 16),
+              Text(
+                widget.option.description,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: Colors.grey.shade500,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ).animate().fadeIn(delay: (widget.index * 100).ms).slideY(begin: 0.1, curve: Curves.easeOutCirc),
+      ),
     );
   }
 }
 
 class _DashOption {
+
   final String title, description, route;
   final IconData icon;
   const _DashOption({required this.title, required this.description, required this.icon, required this.route});

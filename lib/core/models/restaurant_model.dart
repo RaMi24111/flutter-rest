@@ -66,20 +66,24 @@ class MenuItem {
   final String name;
   final String? description;
   final double price;
-  final bool isAvailable;
-  final String? imageUrl;
   final String categoryId;
+  final String? imageUrl;
+  final bool isAvailable;
   final String? preparationTime;
+  final bool isSpecial;
+  final String? restaurantId;
 
   MenuItem({
     required this.id,
     required this.name,
     this.description,
     required this.price,
-    required this.isAvailable,
-    this.imageUrl,
     required this.categoryId,
+    this.imageUrl,
+    this.isAvailable = true,
     this.preparationTime,
+    this.isSpecial = false,
+    this.restaurantId,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
@@ -88,10 +92,12 @@ class MenuItem {
       name: json['name']?.toString() ?? '',
       description: json['description']?.toString(),
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
-      isAvailable: json['is_available'] == true || json['is_available'] == 1,
-      imageUrl: json['image_url']?.toString(),
-      categoryId: json['category_id']?.toString() ?? '',
-      preparationTime: json['preparation_time']?.toString(),
+      categoryId: (json['category_id'] ?? json['categoryId'])?.toString() ?? '',
+      imageUrl: (json['image_url'] ?? json['imageUrl'])?.toString(),
+      isAvailable: (json['is_available'] ?? json['isAvailable']) == true || (json['is_available'] ?? json['isAvailable']) == 1,
+      preparationTime: (json['preparation_time'] ?? json['preparationTime'])?.toString(),
+      isSpecial: (json['is_special'] ?? json['isSpecial']) == true || (json['is_special'] ?? json['isSpecial']) == 1,
+      restaurantId: (json['restaurant_id'] ?? json['restaurantId'])?.toString(),
     );
   }
 }
