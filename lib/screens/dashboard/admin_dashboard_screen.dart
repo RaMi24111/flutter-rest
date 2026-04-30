@@ -120,7 +120,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             crossAxisCount: cols,
                             crossAxisSpacing: 24,
                             mainAxisSpacing: 24,
-                            childAspectRatio: 0.85, // Slightly taller cards
+                            childAspectRatio: 1.0, // Perfectly square cards
                           ),
                           itemCount: _dashboardOptions.length,
                           itemBuilder: (ctx, i) => _HoverableDashCard(
@@ -271,19 +271,19 @@ class _HoverableDashCardState extends State<_HoverableDashCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.all(40),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: _isHovered ? AppColors.gold.withOpacity(0.8) : Colors.transparent,
-              width: 1.5,
+              color: _isHovered ? AppColors.gold : AppColors.rubyDark,
+              width: 1.0, // Thin maroon outline
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(_isHovered ? 0.1 : 0.05),
+                color: AppColors.rubyDark.withOpacity(0.12), // Persistent maroon shadow
                 blurRadius: _isHovered ? 30 : 20,
-                offset: Offset(0, _isHovered ? 15 : 8),
+                offset: Offset(0, _isHovered ? 15 : 10),
               )
             ],
           ),
@@ -292,8 +292,8 @@ class _HoverableDashCardState extends State<_HoverableDashCard> {
             children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                width: 100,
-                height: 100,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   color: _isHovered 
                       ? AppColors.rubyDark 
@@ -303,31 +303,39 @@ class _HoverableDashCardState extends State<_HoverableDashCard> {
                     color: _isHovered ? Colors.transparent : AppColors.rubyDark.withOpacity(0.2),
                     width: 1,
                   ),
+                  boxShadow: _isHovered ? [
+                    BoxShadow(
+                      color: AppColors.rubyDark.withOpacity(0.4),
+                      blurRadius: 20,
+                      spreadRadius: 4,
+                    )
+                  ] : null,
                 ),
                 child: Icon(
                   widget.option.icon, 
                   color: _isHovered ? Colors.white : AppColors.rubyDark, 
-                  size: 44,
+                  size: 36,
                 ),
               ),
-              const SizedBox(height: 32),
+
+              const SizedBox(height: 24),
               Text(
                 widget.option.title,
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: AppColors.rubyDark,
                   letterSpacing: 0.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Text(
                 widget.option.description,
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: Colors.grey.shade500,
-                  height: 1.6,
+                  height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -338,6 +346,7 @@ class _HoverableDashCardState extends State<_HoverableDashCard> {
     );
   }
 }
+
 
 class _DashOption {
 
