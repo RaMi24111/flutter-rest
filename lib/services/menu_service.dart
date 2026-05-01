@@ -71,11 +71,9 @@ class MenuService {
   }
 
   static Future<void> updateSpecialStatus(String itemId, bool isSpecial) async {
-    // PATCH /api/admin/menu/items/:id/toggle  — toggle the special flag
-    // The toggle endpoint flips is_special on the server side
-    // We call it directly and reload to get the fresh state
     await ApiService.patch(
       ApiEndpoints.toggleMenuItem(itemId),
+      body: {'isSpecial': isSpecial, 'is_special': isSpecial}, // Send both to be safe
       requiresAuth: true,
     );
   }

@@ -173,6 +173,7 @@ class OrderModel {
   final String createdAt;
   final String? updatedAt;
   final String? tableNumber;
+  final String customerName;
   final List<OrderItem> items;
 
   OrderModel({
@@ -185,6 +186,7 @@ class OrderModel {
     required this.createdAt,
     this.updatedAt,
     this.tableNumber,
+    this.customerName = 'Guest',
     this.items = const [],
   });
 
@@ -200,6 +202,7 @@ class OrderModel {
       createdAt: (json['created_at'] ?? json['createdAt'])?.toString() ?? '',
       updatedAt: (json['updated_at'] ?? json['updatedAt'])?.toString(),
       tableNumber: (json['table_number'] ?? json['tableNumber'])?.toString(),
+      customerName: (json['customer_name'] ?? json['customerName'])?.toString() ?? 'Guest',
       items: rawItems.map((i) => OrderItem.fromJson(i)).toList(),
     );
   }

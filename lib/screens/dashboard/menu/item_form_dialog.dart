@@ -28,9 +28,10 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
   late String _price;
   late String _prepTime;
   late String _imageUrl;
+  final _imageController = TextEditingController();
+  String _cleanedPreview = '';
   String? _selectedCategoryId;
   late bool _isAvailable;
-  bool _isSpecial = false;
 
   bool _isLoading = false;
 
@@ -42,6 +43,8 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
     _price = widget.item != null ? widget.item!.price.toStringAsFixed(2) : '';
     _prepTime = widget.item?.preparationTime ?? '';
     _imageUrl = widget.item?.imageUrl ?? '';
+    _imageController.text = _imageUrl;
+    _cleanedPreview = _cleanImageUrl(_imageUrl);
     _isAvailable = widget.item?.isAvailable ?? true;
     
     if (widget.item != null) {
@@ -51,6 +54,27 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
     } else if (widget.categories.isNotEmpty) {
       _selectedCategoryId = widget.categories.first.id;
     }
+  }
+
+  String _cleanImageUrl(String url) {
+    if (url.isEmpty) return '';
+    if (url.contains('google.com/imgres')) {
+      try {
+        final uri = Uri.parse(url);
+        final imgUrl = uri.queryParameters['imgurl'];
+        if (imgUrl != null && imgUrl.isNotEmpty) {
+          debugPrint('CLEANED URL (Google): $imgUrl');
+          return imgUrl;
+        }
+      } catch (_) {}
+    }
+    return url;
+  }
+
+  @override
+  void dispose() {
+    _imageController.dispose();
+    super.dispose();
   }
 
   Future<void> _submit() async {
@@ -68,14 +92,9 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
         'name': _name,
         'description': _description.isEmpty ? null : _description,
         'price': double.tryParse(_price) ?? 0.0,
-        'imageUrl': _imageUrl.isEmpty ? null : _imageUrl,
         'image_url': _imageUrl.isEmpty ? null : _imageUrl,
-        'categoryId': _selectedCategoryId,
         'category_id': _selectedCategoryId,
-        'isAvailable': _isAvailable,
         'is_available': _isAvailable,
-        'isSpecial': _isSpecial,
-        'is_special': _isSpecial,
       };
 
       if (widget.item == null) {
@@ -151,10 +170,26 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  initialValue: _imageUrl,
-                  decoration: const InputDecoration(labelText: 'Image URL'),
-                  onSaved: (val) => _imageUrl = val?.trim() ?? '',
+                  controller: _imageController,
+                  decoration: const InputDecoration(
+                    labelText: 'Image URL',
+                    helperText: 'Paste Google Image links here',
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _cleanedPreview = _cleanImageUrl(val.trim());
+                    });
+                  },
+                  onSaved: (val) => _imageUrl = _cleanImageUrl(val?.trim() ?? ''),
                 ),
+                if (_cleanedPreview.isNotEmpty && _cleanedPreview != _imageController.text)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Cleaned: ${_cleanedPreview.substring(0, _cleanedPreview.length > 50 ? 50 : _cleanedPreview.length)}...',
+                      style: const TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 TextFormField(
                   initialValue: _description,
@@ -172,15 +207,6 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                         activeColor: AppColors.success,
                         value: _isAvailable,
                         onChanged: (val) => setState(() => _isAvailable = val),
-                      ),
-                    ),
-                    Expanded(
-                      child: SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Special', style: TextStyle(fontSize: 14)),
-                        activeColor: AppColors.rubyRed,
-                        value: _isSpecial,
-                        onChanged: (val) => setState(() => _isSpecial = val),
                       ),
                     ),
                   ],

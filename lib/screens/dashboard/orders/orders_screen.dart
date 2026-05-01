@@ -65,26 +65,26 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget build(BuildContext context) {
     final filtered = _filtered;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.ivory,
       body: Column(
         children: [
           _buildHeader(),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.rubyRed))
+                ? const Center(child: CircularProgressIndicator(color: AppColors.rubyDark))
                 : _error != null
                     ? _buildErrorState()
                     : SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildStatsGrid(),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 32),
                             _buildFilterSection(),
                             const SizedBox(height: 24),
                             Text('Showing ${filtered.length} orders', 
-                              style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w500)),
+                              style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 12),
                             _buildOrdersTable(filtered),
                           ],
@@ -99,37 +99,50 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(32, 48, 32, 32),
+      padding: const EdgeInsets.fromLTRB(40, 48, 40, 32),
       decoration: const BoxDecoration(
         color: AppColors.rubyDark,
+        border: Border(bottom: BorderSide(color: AppColors.gold, width: 4)),
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              OutlinedButton.icon(
-                onPressed: () => context.go('/admin/dashboard'),
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
-                label: const Text('Back to Dashboard', style: TextStyle(color: Colors.white)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white30),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
+          OutlinedButton.icon(
+            onPressed: () => context.go('/admin/dashboard'),
+            icon: const Icon(Icons.arrow_back, color: AppColors.gold, size: 18),
+            label: Text('Back to Dashboard', style: GoogleFonts.inter(color: AppColors.gold, fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.white.withOpacity(0.1),
+              side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Column(
+                children: [
+                  Text('Orders Management', 
+                    style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text('View, track and place customer orders', 
+                    style: GoogleFonts.inter(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.w500)),
+                ],
               ),
-              const Expanded(
-                child: Center(
-                  child: Column(
-                    children: [
-                      Text('Orders Management', 
-                        style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold, fontFamily: 'Playfair Display')),
-                      Text('View and track all customer orders', 
-                        style: TextStyle(color: AppColors.gold, fontSize: 14)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 160), // Spacer to balance the back button
-            ],
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              // TODO: Implement place order functionality
+            },
+            icon: const Icon(Icons.add, color: AppColors.rubyDark, size: 18),
+            label: Text('Place Order', style: GoogleFonts.inter(color: AppColors.rubyDark, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
           ),
         ],
       ),
@@ -139,13 +152,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget _buildStatsGrid() {
     return Row(
       children: [
-        _statCard('Total Orders', _orders.length.toString(), AppColors.textDark),
-        const SizedBox(width: 16),
-        _statCard('Pending', _orders.where((o) => o.status == 'PLACED').length.toString(), AppColors.warning),
-        const SizedBox(width: 16),
-        _statCard('Completed', _orders.where((o) => o.status == 'SERVED').length.toString(), AppColors.success),
-        const SizedBox(width: 16),
-        _statCard('Total Revenue', '₹${_totalRevenue.toStringAsFixed(2)}', AppColors.rubyRed),
+        _statCard('Total Orders', _orders.length.toString(), AppColors.rubyDark),
+        const SizedBox(width: 24),
+        _statCard('Placed', _orders.where((o) => o.status == 'PLACED').length.toString(), const Color(0xFF0284C7)),
+        const SizedBox(width: 24),
+        _statCard('Served', _orders.where((o) => o.status == 'SERVED').length.toString(), const Color(0xFF16A34A)),
+        const SizedBox(width: 24),
+        _statCard('Total Revenue', '₹${_totalRevenue.toStringAsFixed(0)}', AppColors.rubyDark),
       ],
     );
   }
@@ -153,18 +166,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget _statCard(String title, String value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 4, offset: const Offset(0, 2))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13, fontWeight: FontWeight.w500)),
+            Text(title, style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
-            Text(value, style: GoogleFonts.inter(color: color, fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(value, style: GoogleFonts.inter(color: color, fontSize: 28, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -173,23 +187,24 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Widget _buildFilterSection() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.filter_list, size: 20, color: AppColors.textMuted),
+              const Icon(Icons.filter_alt_outlined, size: 20, color: AppColors.rubyDark),
               const SizedBox(width: 8),
-              Text('Filters', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15)),
+              Text('Filters', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.rubyDark)),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
@@ -198,18 +213,45 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   onChanged: (v) => setState(() => _searchQuery = v),
                   decoration: InputDecoration(
                     hintText: 'Search by Order ID...',
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                    prefixIcon: Icon(Icons.search, size: 20, color: Colors.grey.shade500),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade200)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(child: _buildDropdown(_statusFilter, ['All Status', 'PLACED', 'CONFIRMED', 'PREPARING', 'READY', 'SERVED', 'CANCELLED'], (v) => setState(() => _statusFilter = v!))),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(child: _buildDropdown(_paymentFilter, ['All Payments', 'PAID', 'PENDING'], (v) => setState(() => _paymentFilter = v!))),
-              const SizedBox(width: 12),
-              Expanded(child: _buildDropdown(_typeFilter, ['All Types', 'Dine In', 'Takeaway'], (v) => setState(() => _typeFilter = v!))),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('dd-mm-yyyy', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 14)),
+                      Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade500),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: _buildDropdown(_typeFilter, ['All Types', 'DINE_IN', 'TAKEAWAY'], (v) => setState(() => _typeFilter = v!))
+              ),
+              const Spacer(flex: 3), // Add space to push the "All Types" dropdown to the left like the screenshot
             ],
           ),
         ],
@@ -219,16 +261,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Widget _buildDropdown(String value, List<String> items, ValueChanged<String?> onChanged) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.grey.shade200),
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          items: items.map((i) => DropdownMenuItem(value: i, child: Text(i, style: const TextStyle(fontSize: 14)))).toList(),
+          icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade600),
+          items: items.map((i) => DropdownMenuItem(value: i, child: Text(i, style: GoogleFonts.inter(fontSize: 14, color: AppColors.textDark)))).toList(),
           onChanged: onChanged,
         ),
       ),
@@ -240,37 +283,75 @@ class _OrdersScreenState extends State<OrdersScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: DataTable(
-          headingRowColor: WidgetStateProperty.all(Colors.grey.shade50),
-          dataRowMaxHeight: 70,
-          columns: const [
-            DataColumn(label: Text('ORDER ID', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('ORDER TYPE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('STATUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('TOTAL AMOUNT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('PAYMENT STATUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('CREATED', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('ACTIONS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+          headingRowColor: WidgetStateProperty.all(Colors.white),
+          dataRowMaxHeight: 80,
+          horizontalMargin: 24,
+          columnSpacing: 24,
+          dividerThickness: 1,
+          columns: [
+            DataColumn(label: Text('ORDER ID', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
+            DataColumn(label: Text('CUSTOMER', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
+            DataColumn(label: Text('TABLE', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
+            DataColumn(label: Text('STATUS', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
+            DataColumn(label: Text('TOTAL AMOUNT', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
+            DataColumn(label: Text('PAYMENT', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
+            DataColumn(label: Text('DATE', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
+            DataColumn(label: Text('ACTIONS', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.grey.shade600, letterSpacing: 0.5))),
           ],
           rows: orders.map((o) => DataRow(cells: [
-            DataCell(Text('#${o.id.substring(0, 8)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.rubyDark))),
-            DataCell(_badge(o.orderType.replaceAll('_', ' '), const Color(0xFFE0F2FE), const Color(0xFF0284C7))),
-            DataCell(_statusIcon(o.status)),
-            DataCell(Text('₹${o.totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold))),
-            DataCell(_badge(o.paymentStatus, o.paymentStatus == 'PAID' ? const Color(0xFFDCFCE7) : const Color(0xFFFEF9C3), o.paymentStatus == 'PAID' ? const Color(0xFF16A34A) : const Color(0xFFCA8A04))),
-            DataCell(Text(DateFormat('MMM dd, yyyy, hh:mm a').format(DateTime.tryParse(o.createdAt) ?? DateTime.now()), style: const TextStyle(fontSize: 12, color: AppColors.textMuted))),
+            DataCell(
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('#${o.id.substring(0, 8)}', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.rubyDark, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  _badge(o.orderType.replaceAll('_', '-'), const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
+                ],
+              )
+            ),
+            DataCell(
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
+                    child: Icon(Icons.person_outline, size: 14, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(o.customerName, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                ],
+              )
+            ),
+            DataCell(
+              Row(
+                children: [
+                  Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text(o.tableNumber ?? 'N/A', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textDark)),
+                ],
+              )
+            ),
+            DataCell(_statusBadge(o.status)),
+            DataCell(Text('₹${o.totalAmount.toStringAsFixed(0)}', style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: AppColors.rubyDark, fontSize: 14))),
+            DataCell(_paymentBadge(o.paymentStatus)),
+            DataCell(Text(DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.tryParse(o.createdAt) ?? DateTime.now()), style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted))),
             DataCell(ElevatedButton.icon(
               onPressed: () => _showOrderDetails(o),
-              icon: const Icon(Icons.visibility, size: 16),
-              label: const Text('View Details'),
+              icon: const Icon(Icons.visibility, size: 14),
+              label: Text('View Details', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 12)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2563EB),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                elevation: 0,
               ),
             )),
           ])).toList(),
@@ -281,22 +362,47 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Widget _badge(String text, Color bg, Color textCol) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
-      child: Text(text.toUpperCase(), style: TextStyle(color: textCol, fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Text(text, style: GoogleFonts.inter(color: textCol, fontSize: 9, fontWeight: FontWeight.w700)),
     );
   }
 
-  Widget _statusIcon(String status) {
-    // Matches the small rectangle in user's screenshot if status is not SERVED? 
-    // Actually, let's use a nice outlined rectangle/status bar.
+  Widget _statusBadge(String status) {
+    Color bg = const Color(0xFFE0F2FE);
+    Color text = const Color(0xFF0284C7);
+    
+    if (status.toUpperCase() == 'SERVED') {
+      bg = const Color(0xFFDCFCE7);
+      text = const Color(0xFF16A34A);
+    } else if (status.toUpperCase() == 'CANCELLED') {
+      bg = const Color(0xFFFEE2E2);
+      text = const Color(0xFFDC2626);
+    } else if (status.toUpperCase() == 'PREPARING') {
+      bg = const Color(0xFFFEF3C7);
+      text = const Color(0xFFD97706);
+    }
+    
     return Container(
-      width: 24,
-      height: 12,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey.shade400),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100), border: Border.all(color: text.withOpacity(0.3))),
+      child: Text(status.toUpperCase() == 'PLACED' ? 'Placed' : status, style: GoogleFonts.inter(color: text, fontSize: 11, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  Widget _paymentBadge(String status) {
+    Color bg = const Color(0xFFFEF9C3);
+    Color text = const Color(0xFFCA8A04);
+    
+    if (status.toUpperCase() == 'PAID') {
+      bg = const Color(0xFFDCFCE7);
+      text = const Color(0xFF16A34A);
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100), border: Border.all(color: text.withOpacity(0.3))),
+      child: Text(status.toUpperCase() == 'PENDING' ? 'Pending' : status, style: GoogleFonts.inter(color: text, fontSize: 11, fontWeight: FontWeight.bold)),
     );
   }
 

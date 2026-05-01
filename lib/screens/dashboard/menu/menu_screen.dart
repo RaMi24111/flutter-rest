@@ -338,18 +338,10 @@ class _MenuScreenState extends State<MenuScreen> {
           const SizedBox(height: 12),
           Expanded(
             child: ListView.separated(
-              itemCount: _categories.length + 1,
+              itemCount: _categories.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (ctx, i) {
-                if (i == 0) {
-                  return _buildSidebarItem(
-                    id: 'SPECIALS',
-                    name: '🔥 Today\'s Special',
-                    description: 'Featured items',
-                    isSelected: _selectedCategoryId == 'SPECIALS',
-                  );
-                }
-                final cat = _categories[i - 1];
+                final cat = _categories[i];
                 return _buildSidebarItem(
                   id: cat.id,
                   name: cat.name,
@@ -534,7 +526,12 @@ class _MenuScreenState extends State<MenuScreen> {
             child: Container(
               color: AppColors.ivoryDark,
               child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                  ? Image.network(item.imageUrl!, fit: BoxFit.cover)
+                  ? Image.network(
+                      item.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(child: Icon(Icons.broken_image, color: AppColors.textMuted, size: 64)),
+                    )
                   : const Center(child: Icon(Icons.restaurant, color: AppColors.textMuted, size: 64)),
             ),
           ),
@@ -559,17 +556,18 @@ class _MenuScreenState extends State<MenuScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            IconButton(
-                              onPressed: () => _toggleSpecial(item.id),
-                              icon: Icon(
-                                item.isSpecial ? Icons.star : Icons.star_border,
-                                color: item.isSpecial ? AppColors.gold : AppColors.textMuted,
-                                size: 20,
+                            if (item.isSpecial)
+                              IconButton(
+                                onPressed: () => _toggleSpecial(item.id),
+                                icon: const Icon(
+                                  Icons.star,
+                                  color: AppColors.gold,
+                                  size: 20,
+                                ),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                tooltip: 'Today\'s Special',
                               ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              tooltip: 'Toggle Today\'s Special',
-                            ),
                           ],
                         ),
                       ),
