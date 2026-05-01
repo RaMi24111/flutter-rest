@@ -504,7 +504,7 @@ class _MenuScreenState extends State<MenuScreen> {
           crossAxisCount: cols,
           mainAxisSpacing: 32,
           crossAxisSpacing: 32,
-          childAspectRatio: 0.50, // Even taller cards (was 0.60)
+          childAspectRatio: 0.75, // Much more balanced ratio
         ),
         itemCount: items.length,
         itemBuilder: (ctx, i) => _buildItemCard(items[i], i).animate().fadeIn(delay: (i * 30).ms, duration: 400.ms),
@@ -523,7 +523,7 @@ class _MenuScreenState extends State<MenuScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            flex: 4,
+            flex: 5,
             child: Container(
               color: AppColors.ivoryDark,
               child: item.imageUrl != null && item.imageUrl!.isNotEmpty
@@ -531,15 +531,15 @@ class _MenuScreenState extends State<MenuScreen> {
                       item.imageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
-                          const Center(child: Icon(Icons.broken_image, color: AppColors.textMuted, size: 64)),
+                          const Center(child: Icon(Icons.broken_image, color: AppColors.textMuted, size: 48)),
                     )
-                  : const Center(child: Icon(Icons.restaurant, color: AppColors.textMuted, size: 64)),
+                  : const Center(child: Icon(Icons.restaurant, color: AppColors.textMuted, size: 48)),
             ),
           ),
           Expanded(
             flex: 6,
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -596,12 +596,10 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Expanded(
-                    child: Text(item.description ?? 'No description provided.',
-                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  Text(item.description ?? 'No description provided.',
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
+                    maxLines: 1, // Reduced to 1 line for shorter card
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
