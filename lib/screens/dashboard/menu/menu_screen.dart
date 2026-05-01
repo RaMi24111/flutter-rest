@@ -189,7 +189,7 @@ class _MenuScreenState extends State<MenuScreen> {
               slivers: [
                 SliverToBoxAdapter(child: _buildCustomHeader()),
                 SliverPadding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 100), // Extra bottom padding
                   sliver: SliverToBoxAdapter(
                     child: _error != null
                         ? _buildError()
@@ -197,8 +197,8 @@ class _MenuScreenState extends State<MenuScreen> {
                             ? Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SizedBox(width: 280, child: _buildSidebar()),
-                                  const SizedBox(width: 24),
+                                  SizedBox(width: 300, child: _buildSidebar()),
+                                  const SizedBox(width: 32),
                                   Expanded(child: _buildMainContent()),
                                 ],
                               )
@@ -206,7 +206,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   _buildSidebar(),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 32),
                                   _buildMainContent(),
                                 ],
                               ),
@@ -502,9 +502,9 @@ class _MenuScreenState extends State<MenuScreen> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: cols,
-          mainAxisSpacing: 24,
-          crossAxisSpacing: 24,
-          childAspectRatio: 0.60, // Much taller cards to prevent overflow
+          mainAxisSpacing: 32,
+          crossAxisSpacing: 32,
+          childAspectRatio: 0.50, // Even taller cards (was 0.60)
         ),
         itemCount: items.length,
         itemBuilder: (ctx, i) => _buildItemCard(items[i], i).animate().fadeIn(delay: (i * 30).ms, duration: 400.ms),

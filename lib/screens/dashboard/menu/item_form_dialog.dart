@@ -58,16 +58,31 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
 
   String _cleanImageUrl(String url) {
     if (url.isEmpty) return '';
+    
+    // Handle Google Search Redirects
     if (url.contains('google.com/imgres')) {
       try {
         final uri = Uri.parse(url);
         final imgUrl = uri.queryParameters['imgurl'];
-        if (imgUrl != null && imgUrl.isNotEmpty) {
-          debugPrint('CLEANED URL (Google): $imgUrl');
-          return imgUrl;
-        }
+        if (imgUrl != null && imgUrl.isNotEmpty) return imgUrl;
       } catch (_) {}
     }
+    
+    // Handle Bing Search Redirects
+    if (url.contains('bing.com/images/search')) {
+      try {
+        final uri = Uri.parse(url);
+        final imgUrl = uri.queryParameters['imgurl'];
+        if (imgUrl != null && imgUrl.isNotEmpty) return imgUrl;
+      } catch (_) {}
+    }
+    
+    // Handle base64 or data urls (optional, but good to keep)
+    if (url.startsWith('data:image')) return url;
+    
+    // Basic validation: if it doesn't start with http, it's likely invalid
+    if (!url.startsWith('http')) return '';
+
     return url;
   }
 
@@ -171,9 +186,17 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _imageController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Image URL',
-                    helperText: 'Paste Google Image links here',
+                    hintText: 'https://example.com/image.jpg',
+                    helperText: '💡 Tip: Right-click any image online and select "Copy Image Address"',
+                    helperStyle: TextStyle(color: AppColors.rubyRed.withOpacity(0.8), fontWeight: FontWeight.w500, fontSize: 11),
+                    suffixIcon: _imageController.text.isNotEmpty 
+                      ? IconButton(icon: const Icon(Icons.clear, size: 18), onPressed: () {
+                          _imageController.clear();
+                          setState(() => _cleanedPreview = '');
+                        }) 
+                      : null,
                   ),
                   onChanged: (val) {
                     setState(() {
@@ -182,11 +205,46 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                   },
                   onSaved: (val) => _imageUrl = _cleanImageUrl(val?.trim() ?? ''),
                 ),
+                const SizedBox(height: 12),
+                // --- Image Preview Section ---
+                Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.ivoryDark,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: _cleanedPreview.isEmpty
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 32),
+                            const SizedBox(height: 4),
+                            Text('Image Preview', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                          ],
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            _cleanedPreview,
+                            fit: BoxFit.cover,
+                            errorBuilder: (ctx, err, stack) => Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.broken_image, color: AppColors.danger, size: 32),
+                                const SizedBox(height: 4),
+                                Text('Invalid Image URL', style: TextStyle(color: AppColors.danger, fontSize: 11)),
+                              ],
+                            ),
+                          ),
+                        ),
+                ),
                 if (_cleanedPreview.isNotEmpty && _cleanedPreview != _imageController.text)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      'Cleaned: ${_cleanedPreview.substring(0, _cleanedPreview.length > 50 ? 50 : _cleanedPreview.length)}...',
+                      'Direct Link Extracted Successfully!',
                       style: const TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.bold),
                     ),
                   ),
