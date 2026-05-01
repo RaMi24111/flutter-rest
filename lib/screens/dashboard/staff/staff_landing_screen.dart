@@ -14,39 +14,25 @@ class StaffLandingScreen extends StatelessWidget {
       body: Stack(
         children: [
           // Light Elegant "Foggy" Background
-          Positioned.fill(
-            child: Container(
-              color: AppColors.ivory,
-              child: Stack(
-                children: [
-                  Opacity(
-                    opacity: 0.1,
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.white,
-                          Colors.white.withOpacity(0.0),
+                  // Clean Elegant Background
+                  Positioned.fill(
+                    child: Container(
+                      color: AppColors.ivory,
+                      child: Stack(
+                        children: [
+                          Opacity(
+                            opacity: 0.05,
+                            child: Image.network(
+                              'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            ),
+                          ),
                         ],
-                        stops: const [0.0, 0.3],
                       ),
                     ),
                   ),
-                  // Animated Golden Circles
-                  const _AnimatedGoldenCircles(),
-                ],
-              ),
-            ),
-          ),
 
           SafeArea(
             child: SingleChildScrollView(
@@ -202,23 +188,16 @@ class _StaffTypeCardState extends State<_StaffTypeCard> {
               // ── Icon Container ──────────────────────────────────
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                width: 88,
-                height: 88,
+                width: 72,
+                height: 72,
                 decoration: BoxDecoration(
-                  color: _isHovered ? AppColors.rubyDark : AppColors.gold,
-                  shape: BoxShape.circle,
-                  boxShadow: _isHovered ? [
-                    BoxShadow(
-                      color: AppColors.rubyDark.withOpacity(0.4),
-                      blurRadius: 20,
-                      spreadRadius: 4,
-                    )
-                  ] : null,
+                  color: _isHovered ? AppColors.rubyRed : AppColors.rubyDark.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   widget.icon,
                   color: _isHovered ? Colors.white : AppColors.rubyDark,
-                  size: 40,
+                  size: 32,
                 ),
               ),
               const SizedBox(height: 32),
@@ -253,45 +232,4 @@ class _StaffTypeCardState extends State<_StaffTypeCard> {
   }
 }
 
-class _AnimatedGoldenCircles extends StatelessWidget {
-  const _AnimatedGoldenCircles();
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Stack(
-        children: List.generate(4, (index) {
-          final delay = index * 1.5;
-          return Align(
-            alignment: Alignment.center,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.gold.withOpacity(0.15), // Thin, hollow, golden, subtle
-                  width: 1.5,
-                ),
-              ),
-            ).animate(
-              onPlay: (controller) => controller.repeat(),
-            ).scale(
-              duration: 6.seconds, 
-              delay: delay.seconds,
-              begin: const Offset(1, 1), 
-              end: const Offset(15, 15), // Expands outward
-              curve: Curves.easeOutCubic,
-            ).fade(
-              duration: 6.seconds,
-              delay: delay.seconds,
-              begin: 1.0,
-              end: 0.0,
-              curve: Curves.easeOutCubic,
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}

@@ -69,32 +69,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Expanded(
             child: Stack(
               children: [
-                // Light Elegant "Foggy" Background
+                // Clean Elegant "Foggy" Background
                 Positioned.fill(
                   child: Container(
-                    color: AppColors.ivory, // Light ivory/white base
+                    color: AppColors.ivory,
                     child: Stack(
                       children: [
                         Opacity(
-                          opacity: 0.1, // Very subtle image
+                          opacity: 0.05,
                           child: Image.network(
                             'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.white,
-                                Colors.white.withOpacity(0.0),
-                              ],
-                              stops: const [0.0, 0.3],
-                            ),
                           ),
                         ),
                       ],
@@ -292,29 +279,18 @@ class _HoverableDashCardState extends State<_HoverableDashCard> {
             children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                width: 80,
-                height: 80,
+                width: 72,
+                height: 72,
                 decoration: BoxDecoration(
                   color: _isHovered 
-                      ? AppColors.rubyDark 
-                      : Colors.grey.withOpacity(0.08),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _isHovered ? Colors.transparent : AppColors.rubyDark.withOpacity(0.2),
-                    width: 1,
-                  ),
-                  boxShadow: _isHovered ? [
-                    BoxShadow(
-                      color: AppColors.rubyDark.withOpacity(0.4),
-                      blurRadius: 20,
-                      spreadRadius: 4,
-                    )
-                  ] : null,
+                      ? AppColors.rubyRed 
+                      : AppColors.rubyDark.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   widget.option.icon, 
                   color: _isHovered ? Colors.white : AppColors.rubyDark, 
-                  size: 36,
+                  size: 32,
                 ),
               ),
 

@@ -181,125 +181,51 @@ class _StaffScreenState extends State<StaffScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.rubyDark,
-      body: Stack(
-        children: [
-          // ── Royal Background ───────────────────────────────────────
-          Positioned.fill(
-            child: Container(
-              color: AppColors.rubyDark,
-              child: Stack(
-                children: [
-                  Opacity(
-                    opacity: 0.2,
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop',
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        colors: [
-                          Colors.transparent,
-                          AppColors.rubyDark.withOpacity(0.8),
-                        ],
-                        radius: 1.2,
-                      ),
-                    ),
-                  ),
-                  // Animated Golden Circles
-                  const _AnimatedGoldenCircles(),
-                ],
-              ),
-            ),
-          ),
-
-          _isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
-              : Column(
-                  children: [
-                    _buildHeader(),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 1200),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildStatsRow(),
-                                const SizedBox(height: 40),
-                                
-                                // ── Main Content Card (Ivory) ────────────────
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: AppColors.ivory,
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: AppColors.gold.withOpacity(0.3), width: 1.5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.3),
-                                        blurRadius: 30,
-                                        offset: const Offset(0, 15),
-                                      )
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(32),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            _buildFiltersBar(),
-                                            const SizedBox(height: 32),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text(
-                                                  'Showing ${_filteredStaff.length} ${widget.role == 'server' ? 'serving' : 'billing'} staff members',
-                                                  style: GoogleFonts.inter(
-                                                    color: AppColors.rubyDark.withOpacity(0.6),
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                _StatusBadge(isActive: true), // Using local widget
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      _buildStaffList(),
-                                      const SizedBox(height: 24),
-                                    ],
-                                  ),
-                                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.05),
-                              ],
+      backgroundColor: AppColors.ivory,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.rubyRed))
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildHeader()),
+                SliverPadding(
+                  padding: const EdgeInsets.all(40),
+                  sliver: SliverToBoxAdapter(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1200),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildStatsRow(),
+                            const SizedBox(height: 40),
+                            _buildFiltersBar(),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Showing ${_filteredStaff.length} ${widget.role == 'server' ? 'serving' : 'billing'} staff members',
+                              style: GoogleFonts.inter(
+                                color: AppColors.textMuted,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 16),
+                            _buildStaffList(),
+                            const SizedBox(height: 100), // Bottom padding
+                          ],
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-        ],
-      ),
+              ],
+            ),
     );
   }
 
   Widget _buildHeader() {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.rubyDark.withOpacity(0.5),
-        border: const Border(bottom: BorderSide(color: AppColors.gold, width: 2)),
-      ),
-      padding: const EdgeInsets.fromLTRB(40, 40, 40, 32),
+      color: AppColors.rubyDark,
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
       child: SafeArea(
         bottom: false,
         child: Center(
@@ -311,54 +237,41 @@ class _StaffScreenState extends State<StaffScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GestureDetector(
-                      onTap: () => context.go('/admin/dashboard/staff'),
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.gold, size: 14),
-                            const SizedBox(width: 8),
-                            Text('Back to Selection',
-                                style: GoogleFonts.inter(
-                                  color: AppColors.gold, 
-                                  fontSize: 13, 
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                )),
-                          ],
-                        ),
+                    ElevatedButton.icon(
+                      onPressed: () => context.go('/admin/dashboard/staff'),
+                      icon: const Icon(Icons.arrow_back, size: 16),
+                      label: const Text('Back to Staff Management'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        foregroundColor: AppColors.gold,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     Text(_roleLabel,
                         style: GoogleFonts.playfairDisplay(
                           color: Colors.white, 
-                          fontSize: 44, 
+                          fontSize: 48, 
                           fontWeight: FontWeight.bold,
-                          letterSpacing: -1,
                         )),
                     const SizedBox(height: 4),
                     Text(_roleSubtitle,
                         style: GoogleFonts.inter(
-                          color: AppColors.gold.withOpacity(0.7), 
-                          fontSize: 15,
-                          fontStyle: FontStyle.italic,
+                          color: AppColors.gold.withOpacity(0.8), 
+                          fontSize: 16,
                         )),
                   ],
                 ),
                 ElevatedButton.icon(
                   onPressed: _showAddDialog,
-                  icon: const Icon(Icons.person_add_alt_1_rounded, color: AppColors.rubyDark, size: 20),
-                  label: Text('NEW MEMBER', style: GoogleFonts.inter(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                  icon: const Icon(Icons.person_add, color: AppColors.rubyDark),
+                  label: Text('Add $_roleLabel'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.gold,
                     foregroundColor: AppColors.rubyDark,
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 8,
-                    shadowColor: AppColors.gold.withOpacity(0.3),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -376,43 +289,30 @@ class _StaffScreenState extends State<StaffScreen> {
 
     return Row(
       children: [
-        _buildStatCard('TOTAL STAFF', total.toString(), AppColors.gold, Icons.group_rounded),
+        _buildStatCard('Total $_roleLabel', total.toString(), AppColors.rubyRed),
         const SizedBox(width: 24),
-        _buildStatCard('ACTIVE NOW', active.toString(), Colors.greenAccent, Icons.check_circle_outline_rounded),
+        _buildStatCard('Active', active.toString(), Colors.green),
         const SizedBox(width: 24),
-        _buildStatCard('INACTIVE', inactive.toString(), Colors.redAccent, Icons.pause_circle_outline_rounded),
+        _buildStatCard('Inactive', inactive.toString(), Colors.red),
       ],
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color color, IconData icon) {
+  Widget _buildStatCard(String label, String value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: AppShadows.card,
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(width: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: GoogleFonts.inter(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
-                const SizedBox(height: 4),
-                Text(value, style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-              ],
-            ),
+            Text(label, style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            Text(value, style: GoogleFonts.inter(color: color, fontSize: 32, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -421,39 +321,45 @@ class _StaffScreenState extends State<StaffScreen> {
 
   Widget _buildFiltersBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: AppShadows.card,
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_rounded, color: AppColors.gold, size: 22),
-          const SizedBox(width: 16),
+          const Icon(Icons.search, color: AppColors.textMuted),
+          const SizedBox(width: 12),
           Expanded(
             child: TextField(
               controller: _searchController,
-              style: GoogleFonts.inter(color: AppColors.rubyDark, fontWeight: FontWeight.w500),
               decoration: const InputDecoration(
-                hintText: 'Find a member...',
+                hintText: 'Search by name or email...',
                 border: InputBorder.none,
-                hintStyle: TextStyle(color: Colors.grey),
+                filled: false,
+                contentPadding: EdgeInsets.zero,
               ),
             ),
           ),
-          Container(width: 1, height: 24, color: Colors.grey.shade200, margin: const EdgeInsets.symmetric(horizontal: 16)),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _statusFilter,
-              icon: const Icon(Icons.filter_list_rounded, color: AppColors.gold),
-              items: ['All Status', 'Active', 'Inactive'].map((e) => DropdownMenuItem(value: e, child: Text(e, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)))).toList(),
-              onChanged: (v) {
-                setState(() {
-                  _statusFilter = v!;
-                  _applyFilters();
-                });
-              },
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _statusFilter,
+                items: ['All Status', 'Active', 'Inactive'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                onChanged: (v) {
+                  setState(() {
+                    _statusFilter = v!;
+                    _applyFilters();
+                  });
+                },
+              ),
             ),
           ),
         ],
@@ -466,37 +372,44 @@ class _StaffScreenState extends State<StaffScreen> {
       children: [
         // Table Header
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.rubyDark.withOpacity(0.03),
-            border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: AppShadows.card,
           ),
-          child: Row(
+          child: Column(
             children: [
-              _headerCell('MEMBER', 3),
-              _headerCell('CONTACT INFO', 3),
-              _headerCell('PERMISSION', 2),
-              _headerCell('STATUS', 1),
-              _headerCell('ACTIONS', 1),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    _headerCell('NAME', 2),
+                    _headerCell('EMAIL', 3),
+                    _headerCell('ROLE', 2),
+                    _headerCell('PHONE', 2),
+                    _headerCell('STATUS', 1),
+                    _headerCell('ACTIONS', 1),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              if (_filteredStaff.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(48),
+                  child: Center(child: Text('No members found')),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _filteredStaff.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (ctx, i) => _buildStaffRow(_filteredStaff[i], i),
+                ),
             ],
           ),
         ),
-        // List Items
-        if (_filteredStaff.isEmpty)
-           Padding(
-             padding: const EdgeInsets.all(60),
-             child: Center(
-               child: Column(
-                 children: [
-                   Icon(Icons.person_search_rounded, size: 64, color: AppColors.gold.withOpacity(0.3)),
-                   const SizedBox(height: 16),
-                   Text('No staff members found', style: GoogleFonts.inter(color: Colors.grey, fontSize: 16)),
-                 ],
-               ),
-             ),
-           )
-        else
-          ..._filteredStaff.asMap().entries.map((entry) => _buildStaffRow(entry.value, entry.key)),
       ],
     );
   }
@@ -516,75 +429,90 @@ class _StaffScreenState extends State<StaffScreen> {
   }
 
   Widget _buildStaffRow(StaffMember s, int index) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-      decoration: BoxDecoration(
-        border: index == _filteredStaff.length - 1 ? null : Border(bottom: BorderSide(color: Colors.grey.shade100)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           // Name
           Expanded(
-            flex: 3,
+            flex: 2,
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: AppColors.gold.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Icon(Icons.person_rounded, size: 24, color: AppColors.gold),
+                  child: const Icon(Icons.person_outline, size: 18, color: AppColors.textMuted),
                 ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(s.name, style: GoogleFonts.playfairDisplay(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.rubyDark)),
-                    Text('Restaurant Staff', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade500)),
-                  ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(s.name, 
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppColors.textDark, fontSize: 14)),
                 ),
               ],
             ),
           ),
-          // Email & Phone
+          const SizedBox(width: 8),
+          // Email
           Expanded(
             flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(s.email, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.rubyDark.withOpacity(0.8))),
-                const SizedBox(height: 4),
-                Text(s.phone ?? 'No phone provided', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade400)),
+                const Icon(Icons.email_outlined, size: 16, color: AppColors.textMuted),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(s.email, 
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+                ),
               ],
             ),
           ),
-          // Role Badge
+          const SizedBox(width: 8),
+          // Role
           Expanded(
             flex: 2,
-            child: Align(
-              alignment: Alignment.centerLeft,
+            child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.rubyDark.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.rubyDark.withOpacity(0.1)),
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(color: Colors.green.shade100),
                 ),
-                child: Text(_roleLabel.toUpperCase(), 
-                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.rubyDark, letterSpacing: 1)),
+                child: Text(_roleLabel, 
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(fontSize: 11, color: Colors.green.shade700, fontWeight: FontWeight.w600)),
               ),
             ),
           ),
-          // Status Toggle
+          const SizedBox(width: 8),
+          // Phone
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(s.phone ?? '—', 
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Status
           Expanded(
             flex: 1,
-            child: Switch(
-              value: s.isActive,
-              onChanged: (v) => _toggleStaff(s.id),
-              activeColor: Colors.green,
-              activeTrackColor: Colors.green.withOpacity(0.2),
+            child: Center(
+              child: Transform.scale(
+                scale: 0.8,
+                child: Switch(
+                  value: s.isActive,
+                  onChanged: (v) => _toggleStaff(s.id),
+                  activeColor: AppColors.success,
+                ),
+              ),
             ),
           ),
           // Actions
@@ -593,9 +521,19 @@ class _StaffScreenState extends State<StaffScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                _actionIcon(Icons.edit_note_rounded, AppColors.gold, () {}),
-                const SizedBox(width: 16),
-                _actionIcon(Icons.delete_sweep_rounded, Colors.redAccent.withOpacity(0.7), () => _deleteStaff(s.id)),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.edit_outlined, color: AppColors.info, size: 18),
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 12),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.delete_outline, color: AppColors.danger, size: 18),
+                  onPressed: () => _deleteStaff(s.id),
+                ),
               ],
             ),
           ),
@@ -647,45 +585,4 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-class _AnimatedGoldenCircles extends StatelessWidget {
-  const _AnimatedGoldenCircles();
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Stack(
-        children: List.generate(4, (index) {
-          final delay = index * 1.5;
-          return Align(
-            alignment: Alignment.center,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.gold.withOpacity(0.15), // Thin, hollow, golden, subtle
-                  width: 1.5,
-                ),
-              ),
-            ).animate(
-              onPlay: (controller) => controller.repeat(),
-            ).scale(
-              duration: 6.seconds, 
-              delay: delay.seconds,
-              begin: const Offset(1, 1), 
-              end: const Offset(15, 15), // Expands outward
-              curve: Curves.easeOutCubic,
-            ).fade(
-              duration: 6.seconds,
-              delay: delay.seconds,
-              begin: 1.0,
-              end: 0.0,
-              curve: Curves.easeOutCubic,
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
