@@ -15,12 +15,30 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  bool _isNavigating = false;
+  Offset _navStartPos = Offset.zero;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RestaurantProvider>().fetchRestaurant();
     });
+  }
+
+  void _triggerNavAnimation(Offset startPos, String route) async {
+    setState(() {
+      _navStartPos = startPos;
+      _isNavigating = true;
+    });
+    
+    // Wait for the animation to complete (approx 600ms)
+    await Future.delayed(const Duration(milliseconds: 650));
+    
+    if (mounted) {
+      setState(() => _isNavigating = false);
+      context.go(route);
+    }
   }
 
   final _dashboardOptions = [
@@ -113,7 +131,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           itemBuilder: (ctx, i) => _HoverableDashCard(
                             option: _dashboardOptions[i],
                             index: i,
-                            onTap: () => context.go(_dashboardOptions[i].route),
+                            onTap: (details) => _triggerNavAnimation(details.globalPosition, _dashboardOptions[i].route),
                           ),
                         );
                       }),
@@ -123,13 +141,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 if (restaurantProv.isLoading)
                   const LinearProgressIndicator(color: AppColors.rubyRed),
+
+                // Royal Navigation Pulse
+                if (_isNavigating)
+                  _NavigationPulse(startPos: _navStartPos),
               ],
             ),
           ),
         ],
       ),
-    );
+    ).animate().fadeIn();
   }
+
+
 
   Widget _buildHeader(BuildContext context, AuthProvider auth, dynamic restaurant) {
     return Container(
@@ -214,7 +238,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 class _HoverableDashCard extends StatefulWidget {
   final _DashOption option;
   final int index;
-  final VoidCallback onTap;
+  final Function(TapDownDetails) onTap;
 
   const _HoverableDashCard({
     required this.option,
@@ -236,7 +260,7 @@ class _HoverableDashCardState extends State<_HoverableDashCard> {
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: widget.onTap,
+        onTapDown: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
@@ -392,10 +416,90 @@ class _ProfileChipState extends State<_ProfileChip> {
                   fontWeight: _isHovered ? FontWeight.bold : FontWeight.w600
                 ),
               ),
+
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _NavigationPulse extends StatelessWidget {
+  final Offset startPos;
+  const _NavigationPulse({required this.startPos});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Main Arrow
+        Positioned.fill(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOutCubic,
+            builder: (context, value, child) {
+              // Convert global to local (approximate since we're in a fill Stack)
+              final x = startPos.dx;
+              final y = startPos.dy - 100; // Account for header height approx
+              
+              return Stack(
+                children: [
+                  // Trail Particles
+                  ...List.generate(5, (i) {
+                    final particleProgress = (value - (i * 0.1)).clamp(0.0, 1.0);
+                    if (particleProgress <= 0 || particleProgress >= 0.8) return const SizedBox();
+                    
+                    return Positioned(
+                      left: x + (particleProgress * 150),
+                      top: y - (particleProgress * 50),
+                      child: Opacity(
+                        opacity: (1 - particleProgress) * 0.3,
+                        child: Transform.scale(
+                          scale: 0.5 + (particleProgress * 0.5),
+                          child: Transform.rotate(
+                            angle: -0.5,
+                            child: const Icon(Icons.navigation_rounded, color: AppColors.gold, size: 20),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+
+                  // Main Moving Arrow
+                  Positioned(
+                    left: x + (value * 200),
+                    top: y - (value * 80),
+                    child: Opacity(
+                      opacity: value < 0.8 ? 1.0 : (1.0 - (value - 0.8) * 5),
+                      child: Transform.scale(
+                        scale: 1.0 + (value * 0.4), // Scale up effect
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.gold.withOpacity(0.3 * (1 - value)),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              )
+                            ],
+                          ),
+                          child: Transform.rotate(
+                            angle: -0.5,
+                            child: const Icon(Icons.navigation_rounded, color: AppColors.gold, size: 40),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
