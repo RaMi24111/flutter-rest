@@ -88,8 +88,6 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-
-
   Future<void> _toggleSpecial(String id) async {
     final item = _items.firstWhere((i) => i.id == id);
     try {
@@ -328,11 +326,12 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildSidebarItem(
+          _SidebarItem(
             id: '',
             name: 'All Items',
             description: 'View all',
             isSelected: _selectedCategoryId.isEmpty,
+            onTap: () => setState(() => _selectedCategoryId = ''),
           ),
           const SizedBox(height: 12),
           ListView.separated(
@@ -342,12 +341,17 @@ class _MenuScreenState extends State<MenuScreen> {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (ctx, i) {
               final cat = _categories[i];
-              return _buildSidebarItem(
+              return _SidebarItem(
                 id: cat.id,
                 name: cat.name,
                 description: cat.description ?? '',
                 isSelected: _selectedCategoryId == cat.id,
                 category: cat,
+                onTap: () => setState(() => _selectedCategoryId = cat.id),
+                onEdit: () => _showCategoryForm(cat),
+                onDelete: _items.where((it) => it.categoryId == cat.id).isEmpty 
+                    ? () => _deleteCategory(cat.id) 
+                    : null,
               );
             },
           ),
@@ -356,96 +360,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildSidebarItem({required String id, required String name, required String description, required bool isSelected, MenuCategory? category}) {
-    if (id == '') {
-      // All Items specific style
-      return InkWell(
-        onTap: () => setState(() => _selectedCategoryId = id),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.rubyDark,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(name, style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text('View all', style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return InkWell(
-      onTap: () => setState(() => _selectedCategoryId = id),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.rubyDark.withOpacity(0.02) : Colors.white,
-          border: Border.all(color: isSelected ? AppColors.rubyDark.withOpacity(0.5) : Colors.grey.shade200, width: 1.5),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: GoogleFonts.inter(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.rubyDark,
-                    fontSize: 15,
-                  )),
-                  if (description.isNotEmpty && id != 'SPECIALS') ...[
-                    const SizedBox(height: 4),
-                    Text(description.toUpperCase(), style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade500,
-                      letterSpacing: 0.5,
-                    ), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ] else if (description.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(description, style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ]
-                ],
-              ),
-            ),
-            if (category != null && isSelected) ...[
-              IconButton(
-                icon: Icon(Icons.edit, size: 16, color: AppColors.rubyDark.withOpacity(0.6)),
-                onPressed: () => _showCategoryForm(category),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-            ],
-            if (category != null && _items.where((i) => i.categoryId == category.id).isEmpty)
-              IconButton(
-                icon: Icon(Icons.delete_outline, size: 16, color: Colors.grey.shade400),
-                onPressed: () => _deleteCategory(category.id),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              )
-          ],
-        ),
-      ),
-    );
-  }
+  // Note: _buildSidebarItem is replaced by the _SidebarItem class below
 
   Widget _buildMainContent() {
     return Column(
@@ -660,6 +575,117 @@ class _MenuScreenState extends State<MenuScreen> {
         const SizedBox(height: 16),
         ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
       ]),
+    );
+  }
+}
+
+class _SidebarItem extends StatefulWidget {
+  final String id, name, description;
+  final bool isSelected;
+  final MenuCategory? category;
+  final VoidCallback onTap;
+  final VoidCallback? onEdit, onDelete;
+
+  const _SidebarItem({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.isSelected,
+    this.category,
+    required this.onTap,
+    this.onEdit,
+    this.onDelete,
+  });
+
+  @override
+  State<_SidebarItem> createState() => _SidebarItemState();
+}
+
+class _SidebarItemState extends State<_SidebarItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isAllItems = widget.id.isEmpty;
+    
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.identity()..scale(_isHovered ? 1.02 : 1.0),
+          decoration: BoxDecoration(
+            color: isAllItems 
+                ? AppColors.rubyDark 
+                : (widget.isSelected ? AppColors.rubyDark.withOpacity(0.05) : (_isHovered ? Colors.grey.shade50 : Colors.white)),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isAllItems 
+                  ? Colors.transparent 
+                  : (widget.isSelected ? AppColors.rubyDark.withOpacity(0.5) : (_isHovered ? AppColors.rubyDark.withOpacity(0.2) : Colors.grey.shade200)),
+              width: 1.5,
+            ),
+            boxShadow: _isHovered && !isAllItems ? [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ] : null,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.name, style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      color: isAllItems ? Colors.white : AppColors.rubyDark,
+                      fontSize: 15,
+                    )),
+                    if (widget.description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        isAllItems ? widget.description : widget.description.toUpperCase(), 
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: isAllItems ? Colors.white.withOpacity(0.7) : Colors.grey.shade500,
+                          letterSpacing: 0.5,
+                        ), 
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis
+                      ),
+                    ]
+                  ],
+                ),
+              ),
+              if (!isAllItems && widget.isSelected && widget.onEdit != null) ...[
+                IconButton(
+                  icon: Icon(Icons.edit, size: 16, color: AppColors.rubyDark.withOpacity(0.6)),
+                  onPressed: widget.onEdit,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (!isAllItems && widget.onDelete != null)
+                IconButton(
+                  icon: Icon(Icons.delete_outline, size: 16, color: Colors.grey.shade400),
+                  onPressed: widget.onDelete,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
