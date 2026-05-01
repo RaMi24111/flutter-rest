@@ -191,19 +191,36 @@ class OrderModel {
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
+    final rawTotal = json['total_amount'] ?? json['totalAmount'];
     final rawItems = json['items'] as List<dynamic>? ?? [];
+    
+    double parsedAmount = double.tryParse(
+      (rawTotal ?? 
+       json['amount'] ?? 
+       json['final_amount'] ?? 
+       json['bill_amount'] ?? 
+       '0').toString()
+    ) ?? 0;
+
+    final items = rawItems.map((i) => OrderItem.fromJson(i)).toList();
+    
+    // Fallback to calculated subtotal if totalAmount is 0
+    if (parsedAmount == 0 && items.isNotEmpty) {
+      parsedAmount = items.fold(0, (sum, item) => sum + (item.price * item.quantity));
+    }
+
     return OrderModel(
       id: json['id']?.toString() ?? '',
       status: json['status']?.toString() ?? 'PLACED',
       orderType: (json['order_type'] ?? json['orderType'])?.toString() ?? 'DINE_IN',
-      totalAmount: double.tryParse(json['total_amount']?.toString() ?? json['totalAmount']?.toString() ?? '0') ?? 0,
+      totalAmount: parsedAmount,
       paymentStatus: (json['payment_status'] ?? json['paymentStatus'])?.toString() ?? 'PENDING',
       paymentMethod: (json['payment_method'] ?? json['paymentMethod'])?.toString(),
       createdAt: (json['created_at'] ?? json['createdAt'])?.toString() ?? '',
       updatedAt: (json['updated_at'] ?? json['updatedAt'])?.toString(),
       tableNumber: (json['table_number'] ?? json['tableNumber'])?.toString(),
       customerName: (json['customer_name'] ?? json['customerName'])?.toString() ?? 'Guest',
-      items: rawItems.map((i) => OrderItem.fromJson(i)).toList(),
+      items: items,
     );
   }
 
@@ -228,10 +245,22 @@ class OrderItem {
       itemName = json['menu_item']['name'].toString();
     }
 
+    // Check nested menu_item for price
+    double itemPrice = 0;
+    if (json['price'] != null) {
+      itemPrice = double.tryParse(json['price'].toString()) ?? 0;
+    } else if (json['unit_price'] != null) {
+      itemPrice = double.tryParse(json['unit_price'].toString()) ?? 0;
+    } else if (json['menu_item'] != null && json['menu_item']['price'] != null) {
+      itemPrice = double.tryParse(json['menu_item']['price'].toString()) ?? 0;
+    } else if (json['amount'] != null) {
+      itemPrice = double.tryParse(json['amount'].toString()) ?? 0;
+    }
+
     return OrderItem(
       name: itemName,
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
-      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
+      price: itemPrice,
     );
   }
 }

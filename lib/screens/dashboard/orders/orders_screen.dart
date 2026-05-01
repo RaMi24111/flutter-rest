@@ -66,33 +66,31 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final filtered = _filtered;
     return Scaffold(
       backgroundColor: AppColors.ivory,
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.rubyDark))
-                : _error != null
-                    ? _buildErrorState()
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildStatsGrid(),
-                            const SizedBox(height: 32),
-                            _buildFilterSection(),
-                            const SizedBox(height: 24),
-                            Text('Showing ${filtered.length} orders', 
-                              style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 12),
-                            _buildOrdersTable(filtered),
-                          ],
-                        ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.rubyDark))
+          : _error != null
+              ? _buildErrorState()
+              : CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(child: _buildHeader()),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _buildStatsGrid(),
+                          const SizedBox(height: 32),
+                          _buildFilterSection(),
+                          const SizedBox(height: 24),
+                          Text('Showing ${filtered.length} orders', 
+                            style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 12),
+                          _buildOrdersTable(filtered),
+                        ]),
                       ),
-          ),
-        ],
-      ),
+                    ),
+                  ],
+                ),
     );
   }
 
@@ -126,24 +124,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   Text('Orders Management', 
                     style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text('View, track and place customer orders', 
+                  Text('View and track customer orders', 
                     style: GoogleFonts.inter(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
           ),
-          ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implement place order functionality
-            },
-            icon: const Icon(Icons.add, color: AppColors.rubyDark, size: 18),
-            label: Text('Place Order', style: GoogleFonts.inter(color: AppColors.rubyDark, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.gold,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
+          const SizedBox(width: 48), // Placeholder to maintain spacing if needed, or just remove
         ],
       ),
     );
@@ -288,7 +275,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: DataTable(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 80),
+            child: DataTable(
           headingRowColor: WidgetStateProperty.all(Colors.white),
           dataRowMaxHeight: 80,
           horizontalMargin: 24,
@@ -325,7 +316,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     child: Icon(Icons.person_outline, size: 14, color: Colors.grey.shade600),
                   ),
                   const SizedBox(width: 8),
-                  Text(o.customerName, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                  Expanded(
+                    child: Text(o.customerName, 
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               )
             ),
@@ -334,7 +330,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 children: [
                   Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade600),
                   const SizedBox(width: 4),
-                  Text(o.tableNumber ?? 'N/A', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textDark)),
+                  Expanded(
+                    child: Text(o.tableNumber ?? 'N/A', 
+                      style: GoogleFonts.inter(fontSize: 13, color: AppColors.textDark),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               )
             ),
@@ -357,8 +358,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ])).toList(),
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Widget _badge(String text, Color bg, Color textCol) {
     return Container(

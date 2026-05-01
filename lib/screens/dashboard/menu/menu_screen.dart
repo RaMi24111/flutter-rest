@@ -183,38 +183,37 @@ class _MenuScreenState extends State<MenuScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.ivory,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildCustomHeader(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.rubyRed))
-                : _error != null
-                    ? _buildError()
-                    : Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: isDesktop 
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(width: 280, child: _buildSidebar()),
-                                const SizedBox(width: 24),
-                                Expanded(child: _buildMainContent()),
-                              ],
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                SizedBox(height: 300, child: _buildSidebar()),
-                                const SizedBox(height: 24),
-                                SizedBox(height: MediaQuery.of(context).size.height - 300, child: _buildMainContent()),
-                              ],
-                            ),
-                      ),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.rubyRed))
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildCustomHeader()),
+                SliverPadding(
+                  padding: const EdgeInsets.all(24.0),
+                  sliver: SliverToBoxAdapter(
+                    child: _error != null
+                        ? _buildError()
+                        : isDesktop
+                            ? Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(width: 280, child: _buildSidebar()),
+                                  const SizedBox(width: 24),
+                                  Expanded(child: _buildMainContent()),
+                                ],
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildSidebar(),
+                                  const SizedBox(height: 24),
+                                  _buildMainContent(),
+                                ],
+                              ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -336,21 +335,21 @@ class _MenuScreenState extends State<MenuScreen> {
             isSelected: _selectedCategoryId.isEmpty,
           ),
           const SizedBox(height: 12),
-          Expanded(
-            child: ListView.separated(
-              itemCount: _categories.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (ctx, i) {
-                final cat = _categories[i];
-                return _buildSidebarItem(
-                  id: cat.id,
-                  name: cat.name,
-                  description: cat.description ?? '',
-                  isSelected: _selectedCategoryId == cat.id,
-                  category: cat,
-                );
-              },
-            ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _categories.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (ctx, i) {
+              final cat = _categories[i];
+              return _buildSidebarItem(
+                id: cat.id,
+                name: cat.name,
+                description: cat.description ?? '',
+                isSelected: _selectedCategoryId == cat.id,
+                category: cat,
+              );
+            },
           ),
         ],
       ),
@@ -484,7 +483,7 @@ class _MenuScreenState extends State<MenuScreen> {
           child: Text('Showing ${_filteredItems.length} items', style: GoogleFonts.inter(color: AppColors.textMuted)),
         ),
         const SizedBox(height: 16),
-        Expanded(child: _buildItemsGrid()),
+        _buildItemsGrid(),
       ],
     );
   }
@@ -499,6 +498,8 @@ class _MenuScreenState extends State<MenuScreen> {
     return LayoutBuilder(builder: (ctx, c) {
       final cols = c.maxWidth > 900 ? 3 : c.maxWidth > 600 ? 2 : 1;
       return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: cols,
           mainAxisSpacing: 24,

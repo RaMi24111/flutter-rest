@@ -98,12 +98,18 @@ class _ManualOrderDialogState extends State<ManualOrderDialog> {
         };
       }).toList();
 
+      final orderTypeMap = {
+        'Dine-in': 'DINE_IN',
+        'Takeaway': 'TAKEAWAY',
+        'Delivery': 'DELIVERY',
+      };
+
       final payload = {
+        "order_type": orderTypeMap[_orderMode] ?? 'DINE_IN',
         "table_id": _orderMode == 'Dine-in' ? _selectedTableId : null,
         "customer_name": _nameCtrl.text.trim(),
         "customer_phone": _phoneCtrl.text.trim(),
         "payment_mode": _paymentMode,
-        "order_mode": _orderMode,
         "items": itemsList,
       };
 
@@ -271,14 +277,18 @@ class _ManualOrderDialogState extends State<ManualOrderDialog> {
           _fieldLabel('Order Mode'),
           SegmentedButton<String>(
             segments: const [
-              ButtonSegment(value: 'Dine-in', label: Text('Dine-in'), icon: Icon(Icons.restaurant, size: 16)),
-              ButtonSegment(value: 'Takeaway', label: Text('Takeaway'), icon: Icon(Icons.shopping_bag, size: 16)),
+              ButtonSegment(value: 'Dine-in', label: Text('Dine-in'), icon: Icon(Icons.restaurant, size: 14)),
+              ButtonSegment(value: 'Takeaway', label: Text('Takeaway'), icon: Icon(Icons.shopping_bag, size: 14)),
+              ButtonSegment(value: 'Delivery', label: Text('Delivery'), icon: Icon(Icons.delivery_dining, size: 14)),
             ],
             selected: {_orderMode},
             onSelectionChanged: (v) => setState(() => _orderMode = v.first),
+            showSelectedIcon: false,
             style: SegmentedButton.styleFrom(
               selectedBackgroundColor: AppColors.rubyRed,
               selectedForegroundColor: Colors.white,
+              textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              visualDensity: VisualDensity.compact,
             ),
           ),
           
