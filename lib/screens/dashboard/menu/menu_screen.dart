@@ -626,8 +626,8 @@ class _SidebarItemState extends State<_SidebarItem> {
             border: Border.all(
               color: isAllItems 
                   ? Colors.transparent 
-                  : (widget.isSelected ? AppColors.rubyDark.withOpacity(0.5) : (_isHovered ? AppColors.rubyDark.withOpacity(0.2) : Colors.grey.shade200)),
-              width: 1.5,
+                  : (widget.isSelected ? AppColors.rubyDark.withOpacity(0.5) : (_isHovered ? AppColors.rubyDark.withOpacity(0.3) : AppColors.rubyDark.withOpacity(0.1))),
+              width: 1.2,
             ),
             boxShadow: _isHovered && !isAllItems ? [
               BoxShadow(

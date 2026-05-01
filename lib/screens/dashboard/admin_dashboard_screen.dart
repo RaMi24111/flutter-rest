@@ -183,25 +183,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.person_pin_rounded, color: AppColors.gold, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          auth.userEmail ?? 'admin@restaurant.com',
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _ProfileChip(email: auth.userEmail ?? 'admin@restaurant.com'),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 40,
@@ -362,6 +344,57 @@ class _StatusBadge extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileChip extends StatefulWidget {
+  final String email;
+  const _ProfileChip({required this.email});
+
+  @override
+  State<_ProfileChip> createState() => _ProfileChipState();
+}
+
+class _ProfileChipState extends State<_ProfileChip> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => context.go('/admin/dashboard/profile'),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: _isHovered ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: _isHovered ? AppColors.gold.withOpacity(0.5) : Colors.white.withOpacity(0.1)),
+            boxShadow: _isHovered ? [
+              BoxShadow(color: AppColors.gold.withOpacity(0.2), blurRadius: 12, spreadRadius: 2)
+            ] : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.person_pin_rounded, color: _isHovered ? Colors.white : AppColors.gold, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                widget.email,
+                style: GoogleFonts.inter(
+                  color: Colors.white, 
+                  fontSize: 13, 
+                  fontWeight: _isHovered ? FontWeight.bold : FontWeight.w600
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

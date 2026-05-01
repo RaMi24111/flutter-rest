@@ -305,6 +305,7 @@ class _StaffScreenState extends State<StaffScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.rubyDark.withOpacity(0.2), width: 1),
           boxShadow: AppShadows.card,
         ),
         child: Column(
@@ -325,6 +326,7 @@ class _StaffScreenState extends State<StaffScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.rubyDark.withOpacity(0.2), width: 1),
         boxShadow: AppShadows.card,
       ),
       child: Row(
@@ -346,7 +348,7 @@ class _StaffScreenState extends State<StaffScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppColors.rubyDark.withOpacity(0.2)),
               borderRadius: BorderRadius.circular(8),
             ),
             child: DropdownButtonHideUnderline(
@@ -376,6 +378,7 @@ class _StaffScreenState extends State<StaffScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.rubyDark.withOpacity(0.2), width: 1),
             boxShadow: AppShadows.card,
           ),
           child: Column(
